@@ -86,3 +86,65 @@ CREATE TABLE feedback (
   FOREIGN KEY (session_id) REFERENCES sessions(id),
   UNIQUE(student_id, counselor_id, session_id)
 ) ENGINE=InnoDB;
+
+
+USE counseling_system;
+
+-- Insert test users (passwords are all 'password123')
+INSERT INTO users (role, name, email, password_hash, phone) VALUES
+('ADMIN', 'System Administrator', 'admin@counseling.edu', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '+1-555-0001'),
+('STUDENT', 'John Smith', 'john.smith@student.edu', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '+1-555-1001'),
+('STUDENT', 'Emily Johnson', 'emily.johnson@student.edu', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '+1-555-1002'),
+('STUDENT', 'Michael Davis', 'michael.davis@student.edu', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '+1-555-1003'),
+('COUNSELOR', 'Dr. Sarah Wilson', 'dr.wilson@counseling.edu', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '+1-555-2001'),
+('COUNSELOR', 'Dr. Robert Chen', 'dr.chen@counseling.edu', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '+1-555-2002'),
+('COUNSELOR', 'Dr. Maria Garcia', 'dr.garcia@counseling.edu', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', '+1-555-2003');
+
+-- Insert counselor profiles
+INSERT INTO counselor_profiles (user_id, specialty, meeting_mode, bio, location) VALUES
+(5, 'Anxiety & Depression', 'VIDEO', 'Licensed clinical psychologist specializing in anxiety disorders and depression treatment for university students.', 'Psychology Building, Room 201'),
+(6, 'Academic Stress', 'IN_PERSON', 'Educational counselor with 10+ years experience helping students manage academic pressure and study habits.', 'Student Services Center, Room 105'),
+(7, 'Relationships & Social Issues', 'PHONE', 'Marriage and family therapist focusing on relationship counseling and social anxiety in young adults.', 'Counseling Center, Room 302');
+
+-- Insert availability slots (next week)
+INSERT INTO availability_slots (counselor_id, start_at, end_at, status) VALUES
+-- Dr. Sarah Wilson (ID: 5)
+(5, '2024-09-02 09:00:00', '2024-09-02 10:00:00', 'OPEN'),
+(5, '2024-09-02 10:00:00', '2024-09-02 11:00:00', 'OPEN'),
+(5, '2024-09-02 14:00:00', '2024-09-02 15:00:00', 'OPEN'),
+(5, '2024-09-03 09:00:00', '2024-09-03 10:00:00', 'OPEN'),
+(5, '2024-09-03 11:00:00', '2024-09-03 12:00:00', 'OPEN'),
+
+-- Dr. Robert Chen (ID: 6)
+(6, '2024-09-02 10:00:00', '2024-09-02 11:00:00', 'OPEN'),
+(6, '2024-09-02 11:00:00', '2024-09-02 12:00:00', 'OPEN'),
+(6, '2024-09-02 13:00:00', '2024-09-02 14:00:00', 'OPEN'),
+(6, '2024-09-04 09:00:00', '2024-09-04 10:00:00', 'OPEN'),
+(6, '2024-09-04 15:00:00', '2024-09-04 16:00:00', 'OPEN'),
+
+-- Dr. Maria Garcia (ID: 7)
+(7, '2024-09-02 13:00:00', '2024-09-02 14:00:00', 'OPEN'),
+(7, '2024-09-02 15:00:00', '2024-09-02 16:00:00', 'OPEN'),
+(7, '2024-09-03 10:00:00', '2024-09-03 11:00:00', 'OPEN'),
+(7, '2024-09-05 14:00:00', '2024-09-05 15:00:00', 'OPEN'),
+(7, '2024-09-05 16:00:00', '2024-09-05 17:00:00', 'OPEN');
+
+-- Insert sample appointments
+INSERT INTO appointments (student_id, counselor_id, start_time, end_time, status, message) VALUES
+(2, 5, '2024-09-02 09:00:00', '2024-09-02 10:00:00', 'APPROVED', 'Experiencing anxiety about upcoming exams'),
+(3, 6, '2024-09-02 10:00:00', '2024-09-02 11:00:00', 'PENDING', 'Need help with time management and study strategies'),
+(4, 7, '2024-09-02 13:00:00', '2024-09-02 14:00:00', 'APPROVED', 'Having relationship issues with roommates');
+
+-- Insert sample sessions
+INSERT INTO sessions (appointment_id, status) VALUES
+(1, 'SCHEDULED'),
+(3, 'SCHEDULED');
+
+-- Insert sample notes (for testing)
+INSERT INTO notes (session_id, counselor_id, content, visibility) VALUES
+(1, 5, 'Initial consultation completed. Student shows signs of mild anxiety. Recommended breathing exercises and scheduled follow-up.', 'PUBLISHED'),
+(2, 7, 'First session focused on communication skills. Student is receptive to feedback.', 'PRIVATE');
+
+-- Insert sample feedback
+INSERT INTO feedback (student_id, counselor_id, session_id, rating, comment) VALUES
+(2, 5, 1, 5, 'Dr. Wilson was very understanding and provided excellent coping strategies. Highly recommend!');
