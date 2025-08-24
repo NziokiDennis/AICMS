@@ -5,7 +5,11 @@ require_once '../config/db.php';
 // Redirect if already logged in
 if (isset($_SESSION['user_id'])) {
     $role = $_SESSION['user_role'];
-    header('Location: /' . ($role === 'STUDENT' ? 'student' : 'counselor') . '/dashboard.php');
+    if ($role === 'STUDENT') {
+        header('Location: ../student/dashboard.php');
+    } elseif ($role === 'COUNSELOR') {
+        header('Location: ../counselor/dashboard.php');
+    }
     exit;
 }
 
@@ -26,8 +30,11 @@ if ($_POST) {
             $_SESSION['user_role'] = $user['role'];
             $_SESSION['user_email'] = $user['email'];
             
-            $redirect = $user['role'] === 'STUDENT' ? '../student/dashboard.php' : '../counselor/dashboard.php';
-            header('Location: ' . $redirect);
+            if ($user['role'] === 'STUDENT') {
+                header('Location: ../student/dashboard.php');
+            } elseif ($user['role'] === 'COUNSELOR') {
+                header('Location: ../counselor/dashboard.php');
+            }
             exit;
         } else {
             $error = 'Invalid email or password';

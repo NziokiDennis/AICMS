@@ -3,7 +3,16 @@
 
 function requireAuth($allowed_roles = []) {
     if (!isset($_SESSION['user_id'])) {
-        header('Location: /counseling-system/auth/login.php');
+        // Determine the correct path to auth/login.php based on current location
+        $redirect_path = '/counseling-system/auth/login.php';
+        
+        // Check if we're in a subdirectory
+        if (strpos($_SERVER['REQUEST_URI'], '/student/') !== false || 
+            strpos($_SERVER['REQUEST_URI'], '/counselor/') !== false) {
+            $redirect_path = '../auth/login.php';
+        }
+        
+        header('Location: ' . $redirect_path);
         exit;
     }
     
@@ -15,7 +24,13 @@ function requireAuth($allowed_roles = []) {
 
 function requireAdminAuth() {
     if (!isset($_SESSION['admin_id'])) {
-        header('Location: /counseling-system/admin/auth/login.php');
+        // Determine correct path based on current location
+        $redirect_path = '/counseling-system/admin/auth/login.php';
+        if (strpos($_SERVER['REQUEST_URI'], '/admin/') !== false && 
+            strpos($_SERVER['REQUEST_URI'], '/admin/auth/') === false) {
+            $redirect_path = 'auth/login.php';
+        }
+        header('Location: ' . $redirect_path);
         exit;
     }
 }

@@ -29,18 +29,25 @@ $stmt = $pdo->prepare("
 $stmt->execute([$_SESSION['user_id']]);
 $today_appointments = $stmt->fetchAll();
 
-// Get completed sessions
+// Get completed sessions count
 $stmt = $pdo->prepare("
-    SELECT a.*, u.name as student_name, s.ended_at
+    SELECT COUNT(*) as completed_count
     FROM appointments a 
-    JOIN users u ON a.student_id = u.id 
-    JOIN sessions s ON s.appointment_id = a.id
     WHERE a.counselor_id = ? AND a.status = 'COMPLETED'
-    ORDER BY s.ended_at DESC
-    LIMIT 5
 ");
 $stmt->execute([$_SESSION['user_id']]);
-$completed_sessions = $stmt->fetchAll();
+$completed_count = $stmt->fetch()['completed_count'];
+
+// Get average rating
+$stmt = $pdo->prepare("
+    SELECT AVG(rating) as avg_rating
+    FROM feedback f
+    JOIN sessions s ON f.session_id = s.id
+    JOIN appointments a ON s.appointment_id = a.id
+    WHERE a.counselor_id = ?
+");
+$stmt->execute([$_SESSION['user_id']]);
+$avg_rating = $stmt->fetch()['avg_rating'] ?? 0;
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -101,7 +108,7 @@ $completed_sessions = $stmt->fetchAll();
                 <div class="card border-0 shadow-sm text-center">
                     <div class="card-body">
                         <i class="fas fa-check-circle text-success fs-2 mb-3"></i>
-                        <h3 class="fw-bold"><?= count($completed_sessions) ?></h3>
+                        <h3 class="fw-bold"><?= $completed_count ?></h3>
                         <p class="text-muted mb-0">Completed</p>
                     </div>
                 </div>
@@ -111,7 +118,7 @@ $completed_sessions = $stmt->fetchAll();
                 <div class="card border-0 shadow-sm text-center">
                     <div class="card-body">
                         <i class="fas fa-star text-info fs-2 mb-3"></i>
-                        <h3 class="fw-bold">4.8</h3>
+                        <h3 class="fw-bold"><?= number_format($avg_rating, 1) ?></h3>
                         <p class="text-muted mb-0">Avg Rating</p>
                     </div>
                 </div>
@@ -212,49 +219,6 @@ $completed_sessions = $stmt->fetchAll();
                 </div>
             </div>
         </div>
-
-        <!-- Recent Completed Sessions -->
-        <?php if (!empty($completed_sessions)): ?>
-            <div class="row mt-4">
-                <div class="col-12">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-header bg-white border-0 py-3">
-                            <h5 class="mb-0 fw-bold">
-                                <i class="fas fa-history text-success me-2"></i>Recently Completed
-                            </h5>
-                        </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover mb-0">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Student</th>
-                                            <th>Session Date</th>
-                                            <th>Completed At</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($completed_sessions as $session): ?>
-                                            <tr>
-                                                <td><?= htmlspecialchars($session['student_name']) ?></td>
-                                                <td><?= date('M j, Y', strtotime($session['start_time'])) ?></td>
-                                                <td><?= date('M j, Y g:i A', strtotime($session['ended_at'])) ?></td>
-                                                <td>
-                                                    <a href="add_note.php?session_id=<?= $session['id'] ?>" class="btn btn-sm btn-outline-primary">
-                                                        <i class="fas fa-sticky-note me-1"></i>Add Note
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        <?php endif; ?>
     </div>
 
     <?php include '../includes/footer.php'; ?>
