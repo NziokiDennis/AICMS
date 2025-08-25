@@ -1,6 +1,7 @@
-```php
 <?php
-// counselor/session.php - Enhanced version
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+header("Expires: 0");
 session_start();
 date_default_timezone_set('Africa/Nairobi'); // Set to Kenyan time (EAT)
 require_once '../config/db.php';
@@ -129,4 +130,3 @@ if (isset($_GET['start']) && is_numeric($_GET['start'])) {
 header("Location: {$redirect_url}?" . $message);
 exit;
 ?>
-```
