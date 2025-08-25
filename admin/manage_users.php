@@ -1,7 +1,10 @@
 <?php
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Pragma: no-cache");
+header("Expires: 0");
 session_start();
 require_once '../config/db.php';
-require_once '../includes/auth_check.php';
+require_once './includes/auth_check.php';
 
 requireAdminAuth();
 
@@ -234,7 +237,7 @@ while ($row = $stmt->fetch()) {
     <link href="../assets/css/app.css" rel="stylesheet">
 </head>
 <body class="bg-light">
-    <?php include 'includes/admin_header.php'; ?>
+    <?php include './includes/admin_header.php'; ?>
     
     <div class="container-fluid py-4">
         <?php if ($message): ?>
@@ -255,15 +258,15 @@ while ($row = $stmt->fetch()) {
                         <p class="text-muted mb-0">Create, edit, and manage system users</p>
                     </div>
                     <div class="dropdown">
-                        <button class="btn btn-success dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <button class="btn btn-success dropdown-toggle" type="button" id="addUserDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fas fa-plus me-2"></i>Add User
                         </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#createUserModal" data-role="STUDENT">
+                        <ul class="dropdown-menu" aria-labelledby="addUserDropdown">
+                            <li><a class="dropdown-item" data-role="STUDENT" data-bs-toggle="modal" data-bs-target="#createUserModal">
                                 <i class="fas fa-graduation-cap me-2"></i>Add Student</a></li>
-                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#createUserModal" data-role="COUNSELOR">
+                            <li><a class="dropdown-item" data-role="COUNSELOR" data-bs-toggle="modal" data-bs-target="#createUserModal">
                                 <i class="fas fa-user-md me-2"></i>Add Counselor</a></li>
-                            <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#createUserModal" data-role="ADMIN">
+                            <li><a class="dropdown-item" data-role="ADMIN" data-bs-toggle="modal" data-bs-target="#createUserModal">
                                 <i class="fas fa-user-shield me-2"></i>Add Admin</a></li>
                         </ul>
                     </div>
@@ -447,14 +450,14 @@ while ($row = $stmt->fetch()) {
     </div>
 
     <!-- Create User Modal -->
-    <div class="modal fade" id="createUserModal" tabindex="-1">
+    <div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">
+                    <h5 class="modal-title" id="createUserModalLabel">
                         <i class="fas fa-user-plus me-2"></i>Add New <span id="roleLabel">User</span>
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form method="POST">
                     <div class="modal-body">
@@ -464,19 +467,19 @@ while ($row = $stmt->fetch()) {
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="name" class="form-label">Full Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="name" required>
+                                <input type="text" class="form-control" name="name" id="name" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
-                                <input type="email" class="form-control" name="email" required>
+                                <input type="email" class="form-control" name="email" id="email" required>
                             </div>
                             <div class="col-md-6">
                                 <label for="phone" class="form-label">Phone Number</label>
-                                <input type="tel" class="form-control" name="phone">
+                                <input type="tel" class="form-control" name="phone" id="phone">
                             </div>
                             <div class="col-md-6">
                                 <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
-                                <input type="password" class="form-control" name="password" required minlength="6">
+                                <input type="password" class="form-control" name="password" id="password" required minlength="6">
                             </div>
                         </div>
                         
@@ -487,12 +490,12 @@ while ($row = $stmt->fetch()) {
                             <div class="row g-3">
                                 <div class="col-md-6">
                                     <label for="specialty" class="form-label">Specialty</label>
-                                    <input type="text" class="form-control" name="specialty" 
+                                    <input type="text" class="form-control" name="specialty" id="specialty" 
                                            placeholder="e.g., Anxiety & Depression">
                                 </div>
                                 <div class="col-md-6">
                                     <label for="meeting_mode" class="form-label">Meeting Mode</label>
-                                    <select class="form-select" name="meeting_mode">
+                                    <select class="form-select" name="meeting_mode" id="meeting_mode">
                                         <option value="IN_PERSON">In Person</option>
                                         <option value="VIDEO">Video Call</option>
                                         <option value="PHONE">Phone Call</option>
@@ -500,12 +503,12 @@ while ($row = $stmt->fetch()) {
                                 </div>
                                 <div class="col-md-6">
                                     <label for="location" class="form-label">Location</label>
-                                    <input type="text" class="form-control" name="location" 
+                                    <input type="text" class="form-control" name="location" id="location" 
                                            placeholder="Office location">
                                 </div>
                                 <div class="col-12">
                                     <label for="bio" class="form-label">Bio</label>
-                                    <textarea class="form-control" name="bio" rows="3" 
+                                    <textarea class="form-control" name="bio" id="bio" rows="3" 
                                               placeholder="Professional background and approach..."></textarea>
                                 </div>
                             </div>
@@ -523,14 +526,14 @@ while ($row = $stmt->fetch()) {
     </div>
 
     <!-- Edit User Modal -->
-    <div class="modal fade" id="editUserModal" tabindex="-1">
+    <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">
+                    <h5 class="modal-title" id="editUserModalLabel">
                         <i class="fas fa-edit me-2"></i>Edit User
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form method="POST">
                     <div class="modal-body">
@@ -600,14 +603,14 @@ while ($row = $stmt->fetch()) {
     </div>
 
     <!-- Reset Password Modal -->
-    <div class="modal fade" id="resetPasswordModal" tabindex="-1">
+    <div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-labelledby="resetPasswordModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">
+                    <h5 class="modal-title" id="resetPasswordModalLabel">
                         <i class="fas fa-key me-2"></i>Reset Password
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form method="POST">
                     <div class="modal-body">
@@ -638,14 +641,14 @@ while ($row = $stmt->fetch()) {
     </div>
 
     <!-- Delete User Modal -->
-    <div class="modal fade" id="deleteUserModal" tabindex="-1">
+    <div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title text-danger">
+                    <h5 class="modal-title text-danger" id="deleteUserModalLabel">
                         <i class="fas fa-exclamation-triangle me-2"></i>Delete User
                     </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form method="POST">
                     <div class="modal-body">
@@ -671,62 +674,75 @@ while ($row = $stmt->fetch()) {
         </div>
     </div>
 
-    <?php include '../includes/footer.php'; ?>
+    <?php include './includes/footer.php'; ?>
     
     <script>
-        // Handle create user modal
-        document.querySelectorAll('[data-bs-target="#createUserModal"]').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const role = this.dataset.role;
-                document.getElementById('userRole').value = role;
-                document.getElementById('roleLabel').textContent = role.charAt(0) + role.slice(1).toLowerCase();
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Add User dropdown
+            const addUserDropdown = document.getElementById('addUserDropdown');
+            if (addUserDropdown) {
+                new bootstrap.Dropdown(addUserDropdown);
+            }
+
+            // Handle create user modal
+            document.querySelectorAll('[data-bs-target="#createUserModal"]').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault(); // Prevent dropdown from closing
+                    const role = this.dataset.role;
+                    document.getElementById('userRole').value = role;
+                    document.getElementById('roleLabel').textContent = role.charAt(0) + role.slice(1).toLowerCase();
+                    
+                    // Show/hide counselor fields
+                    const counselorFields = document.getElementById('counselorFields');
+                    counselorFields.style.display = role === 'COUNSELOR' ? 'block' : 'none';
+
+                    // Reset form fields
+                    document.querySelector('#createUserModal form').reset();
+                    document.getElementById('userRole').value = role;
+                });
+            });
+
+            // Handle edit user
+            function editUser(user) {
+                document.getElementById('editUserId').value = user.id;
+                document.getElementById('editName').value = user.name;
+                document.getElementById('editEmail').value = user.email;
+                document.getElementById('editPhone').value = user.phone || '';
+                document.getElementById('editRole').value = user.role;
+                
+                // Counselor profile fields
+                document.getElementById('editSpecialty').value = user.specialty || '';
+                document.getElementById('editMeetingMode').value = user.meeting_mode || 'IN_PERSON';
+                document.getElementById('editLocation').value = user.location || '';
+                document.getElementById('editBio').value = user.bio || '';
                 
                 // Show/hide counselor fields
-                const counselorFields = document.getElementById('counselorFields');
+                toggleCounselorFields();
+            }
+
+            // Handle role change in edit modal
+            document.getElementById('editRole').addEventListener('change', toggleCounselorFields);
+
+            function toggleCounselorFields() {
+                const role = document.getElementById('editRole').value;
+                const counselorFields = document.getElementById('editCounselorFields');
                 counselorFields.style.display = role === 'COUNSELOR' ? 'block' : 'none';
+            }
+
+            // Handle reset password modal
+            document.querySelectorAll('[data-bs-target="#resetPasswordModal"]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.getElementById('resetUserId').value = this.dataset.userId;
+                    document.getElementById('resetUserName').textContent = this.dataset.userName;
+                });
             });
-        });
 
-        // Handle edit user
-        function editUser(user) {
-            document.getElementById('editUserId').value = user.id;
-            document.getElementById('editName').value = user.name;
-            document.getElementById('editEmail').value = user.email;
-            document.getElementById('editPhone').value = user.phone || '';
-            document.getElementById('editRole').value = user.role;
-            
-            // Counselor profile fields
-            document.getElementById('editSpecialty').value = user.specialty || '';
-            document.getElementById('editMeetingMode').value = user.meeting_mode || 'IN_PERSON';
-            document.getElementById('editLocation').value = user.location || '';
-            document.getElementById('editBio').value = user.bio || '';
-            
-            // Show/hide counselor fields
-            toggleCounselorFields();
-        }
-
-        // Handle role change in edit modal
-        document.getElementById('editRole').addEventListener('change', toggleCounselorFields);
-
-        function toggleCounselorFields() {
-            const role = document.getElementById('editRole').value;
-            const counselorFields = document.getElementById('editCounselorFields');
-            counselorFields.style.display = role === 'COUNSELOR' ? 'block' : 'none';
-        }
-
-        // Handle reset password modal
-        document.querySelectorAll('[data-bs-target="#resetPasswordModal"]').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.getElementById('resetUserId').value = this.dataset.userId;
-                document.getElementById('resetUserName').textContent = this.dataset.userName;
-            });
-        });
-
-        // Handle delete user modal
-        document.querySelectorAll('[data-bs-target="#deleteUserModal"]').forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.getElementById('deleteUserId').value = this.dataset.userId;
-                document.getElementById('deleteUserName').textContent = this.dataset.userName;
+            // Handle delete user modal
+            document.querySelectorAll('[data-bs-target="#deleteUserModal"]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.getElementById('deleteUserId').value = this.dataset.userId;
+                    document.getElementById('deleteUserName').textContent = this.dataset.userName;
+                });
             });
         });
     </script>
