@@ -1,6 +1,8 @@
+```php
 <?php
 // counselor/session.php - Enhanced version
 session_start();
+date_default_timezone_set('Africa/Nairobi'); // Set to Kenyan time (EAT)
 require_once '../config/db.php';
 require_once '../includes/auth_check.php';
 
@@ -38,16 +40,6 @@ if (isset($_GET['start']) && is_numeric($_GET['start'])) {
             throw new Exception('Appointment not found or not approved');
         }
         
-        // Check if we can start (relaxed time check - within 2 hours of start time)
-        $start_time = strtotime($appointment['start_time']);
-        $current_time = time();
-        $time_diff = $current_time - $start_time;
-        
-        // Allow starting 30 minutes early to 2 hours late
-        if ($time_diff < -1800 || $time_diff > 7200) { 
-            throw new Exception('Session can only be started 30 minutes before to 2 hours after scheduled time');
-        }
-        
         if ($appointment['session_status'] && $appointment['session_status'] !== 'SCHEDULED') {
             throw new Exception('Session is already in progress or completed');
         }
@@ -66,8 +58,7 @@ if (isset($_GET['start']) && is_numeric($_GET['start'])) {
         $meeting_info = '';
         switch ($appointment['meeting_mode']) {
             case 'IN_PERSON':
-                $location = $appointment['location'] ?: 'Room 10, Counseling Department, University Grounds';
-                $meeting_info = "Location: {$location}";
+                $meeting_info = "Location: " . ($appointment['location'] ? $appointment['location'] : 'Room 10, Counseling Department, University Grounds');
                 break;
             case 'VIDEO':
                 $meeting_info = "Video call initiated. Share meeting link with student.";
@@ -138,3 +129,4 @@ if (isset($_GET['start']) && is_numeric($_GET['start'])) {
 header("Location: {$redirect_url}?" . $message);
 exit;
 ?>
+```
