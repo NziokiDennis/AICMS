@@ -1,5 +1,5 @@
 <?php
-session_start();
+// index.php (UPDATED) - landing page
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -46,7 +46,7 @@ session_start();
                 <div class="col-md-6 col-lg-3">
                     <div class="feature-card card h-100 border-0 shadow-sm">
                         <div class="card-body text-center p-4">
-                            <i class="fas fa-calendar-check feature-icon"></i>
+                            <i class="fas fa-calendar-check feature-icon" aria-hidden="true"></i>
                             <h5 class="card-title mt-3">Easy Booking</h5>
                             <p class="card-text text-muted">Schedule appointments with your preferred counselor in just a few clicks</p>
                         </div>
@@ -55,7 +55,7 @@ session_start();
                 <div class="col-md-6 col-lg-3">
                     <div class="feature-card card h-100 border-0 shadow-sm">
                         <div class="card-body text-center p-4">
-                            <i class="fas fa-user-tie feature-icon"></i>
+                            <i class="fas fa-user-tie feature-icon" aria-hidden="true"></i>
                             <h5 class="card-title mt-3">Qualified Counselors</h5>
                             <p class="card-text text-muted">Connect with licensed professionals specialized in various areas</p>
                         </div>
@@ -64,7 +64,7 @@ session_start();
                 <div class="col-md-6 col-lg-3">
                     <div class="feature-card card h-100 border-0 shadow-sm">
                         <div class="card-body text-center p-4">
-                            <i class="fas fa-shield-alt feature-icon"></i>
+                            <i class="fas fa-shield-alt feature-icon" aria-hidden="true"></i>
                             <h5 class="card-title mt-3">Confidential Sessions</h5>
                             <p class="card-text text-muted">Your privacy is protected with secure, confidential counseling sessions</p>
                         </div>
@@ -73,7 +73,7 @@ session_start();
                 <div class="col-md-6 col-lg-3">
                     <div class="feature-card card h-100 border-0 shadow-sm">
                         <div class="card-body text-center p-4">
-                            <i class="fas fa-comments feature-icon"></i>
+                            <i class="fas fa-comments feature-icon" aria-hidden="true"></i>
                             <h5 class="card-title mt-3">Feedback & Notes</h5>
                             <p class="card-text text-muted">Access session notes and provide feedback for continuous improvement</p>
                         </div>
@@ -96,7 +96,7 @@ session_start();
                     </a>
                 </div>
                 <div class="col-lg-6 text-center">
-                    <i class="fas fa-heart about-icon"></i>
+                    <i class="fas fa-heart about-icon" aria-hidden="true"></i>
                 </div>
             </div>
         </div>
@@ -107,7 +107,7 @@ session_start();
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-6 text-center">
-                    <i class="fas fa-envelope contact-icon"></i>
+                    <i class="fas fa-envelope contact-icon" aria-hidden="true"></i>
                 </div>
                 <div class="col-lg-6">
                     <h2 class="section-title">Get In Touch</h2>

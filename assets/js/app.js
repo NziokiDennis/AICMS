@@ -1,34 +1,16 @@
 // App-wide JavaScript functionality
 document.addEventListener('DOMContentLoaded', function() {
-    
-    // Auto-hide alerts after 5 seconds
-    const alerts = document.querySelectorAll('.alert');
-    alerts.forEach(alert => {
-        if (alert.classList.contains('alert-success') || alert.classList.contains('alert-info')) {
+    // Auto-hide success/info alerts after 5s
+    document.querySelectorAll('.alert.alert-success, .alert.alert-info')
+        .forEach(alert => {
             setTimeout(() => {
                 alert.style.opacity = '0';
                 setTimeout(() => alert.remove(), 300);
             }, 5000);
-        }
-    });
-
-    // Smooth scrolling for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
         });
-    });
 
     // Form validation enhancement
-    const forms = document.querySelectorAll('form');
-    forms.forEach(form => {
+    document.querySelectorAll('form').forEach(form => {
         form.addEventListener('submit', function(e) {
             const requiredFields = form.querySelectorAll('[required]');
             let isValid = true;
@@ -50,49 +32,43 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Utility function to show alerts
+    // Utility: show alerts
     window.showAlert = function(message, type = 'info') {
         const alertDiv = document.createElement('div');
         alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
-        alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+        alertDiv.style.cssText = 'top:20px;right:20px;z-index:9999;min-width:300px;';
         alertDiv.innerHTML = `
             ${message}
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         `;
         document.body.appendChild(alertDiv);
-        
-        // Auto remove after 5 seconds
-        setTimeout(() => {
-            alertDiv.remove();
-        }, 5000);
+        setTimeout(() => alertDiv.remove(), 5000);
     };
 
-    // Loading button states
+    // Utility: loading state on buttons
     window.setButtonLoading = function(button, loading = true) {
         if (loading) {
+            if (!button.getAttribute('data-original-text')) {
+                button.setAttribute('data-original-text', button.innerHTML);
+            }
             button.disabled = true;
             button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Loading...';
         } else {
             button.disabled = false;
-            button.innerHTML = button.getAttribute('data-original-text') || 'Submit';
+            button.innerHTML = button.getAttribute('data-original-text');
         }
     };
-
 });
 
-// Confirmation dialogs for delete actions
+// Confirmation dialog
 window.confirmDelete = function(message = 'Are you sure you want to delete this item?') {
     return confirm(message);
 };
 
-// Format dates consistently
+// Format dates
 window.formatDate = function(dateString) {
-    const options = { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    };
-    return new Date(dateString).toLocaleDateString('en-US', options);
+    return new Date(dateString).toLocaleDateString('en-US', { 
+        year: 'numeric', month: 'short', day: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+    });
 };

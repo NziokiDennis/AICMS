@@ -3,17 +3,17 @@
         <div class="row">
             <div class="col-lg-3 col-md-6 mb-4">
                 <h5 class="text-primary mb-3">
-                    <i class="fas fa-brain me-2"></i>Happy Hearts
+                    <i class="fas fa-brain me-2" aria-hidden="true"></i>Happy Hearts
                 </h5>
                 <p class="text-muted small">Professional mental health support for university students. Secure, confidential, and accessible counseling services.</p>
                 <div class="social-links mt-3">
-                    <a href="#" class="text-light me-3 fs-5" title="Facebook"><i class="fab fa-facebook-f"></i></a>
-                    <a href="#" class="text-light me-3 fs-5" title="Twitter"><i class="fab fa-twitter"></i></a>
-                    <a href="#" class="text-light me-3 fs-5" title="Instagram"><i class="fab fa-instagram"></i></a>
-                    <a href="#" class="text-light me-3 fs-5" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="#" class="text-light me-3 fs-5" title="Facebook"><i class="fab fa-facebook-f" aria-hidden="true"></i></a>
+                    <a href="#" class="text-light me-3 fs-5" title="Twitter"><i class="fab fa-twitter" aria-hidden="true"></i></a>
+                    <a href="#" class="text-light me-3 fs-5" title="Instagram"><i class="fab fa-instagram" aria-hidden="true"></i></a>
+                    <a href="#" class="text-light me-3 fs-5" title="LinkedIn"><i class="fab fa-linkedin-in" aria-hidden="true"></i></a>
                 </div>
             </div>
-            
+
             <div class="col-lg-2 col-md-6 mb-4">
                 <h6 class="mb-3">Quick Links</h6>
                 <ul class="list-unstyled">
@@ -23,7 +23,7 @@
                     <li class="mb-2"><a href="auth/login.php" class="text-muted text-decoration-none small">Student Login</a></li>
                 </ul>
             </div>
-            
+
             <div class="col-lg-3 col-md-6 mb-4">
                 <h6 class="mb-3">Services</h6>
                 <ul class="list-unstyled">
@@ -34,36 +34,36 @@
                     <li class="mb-2"><span class="text-muted small">Career Guidance</span></li>
                 </ul>
             </div>
-            
+
             <div class="col-lg-4 col-md-6 mb-4">
                 <h6 class="mb-3">Contact Information</h6>
                 <div class="mb-2">
-                    <i class="fas fa-envelope text-primary me-2"></i>
+                    <i class="fas fa-envelope text-primary me-2" aria-hidden="true"></i>
                     <small class="text-muted">support@counseling.edu</small>
                 </div>
                 <div class="mb-2">
-                    <i class="fas fa-phone text-primary me-2"></i>
+                    <i class="fas fa-phone text-primary me-2" aria-hidden="true"></i>
                     <small class="text-muted">+1 (555) 123-4567</small>
                 </div>
                 <div class="mb-2">
-                    <i class="fas fa-clock text-primary me-2"></i>
+                    <i class="fas fa-clock text-primary me-2" aria-hidden="true"></i>
                     <small class="text-muted">Monday - Friday: 8:00 AM - 6:00 PM</small>
                 </div>
                 <div class="mb-3">
-                    <i class="fas fa-calendar text-primary me-2"></i>
+                    <i class="fas fa-calendar text-primary me-2" aria-hidden="true"></i>
                     <small class="text-muted">Saturday: 9:00 AM - 2:00 PM</small>
                 </div>
                 <div class="mt-3">
                     <small class="text-warning">
-                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        <i class="fas fa-exclamation-triangle me-1" aria-hidden="true"></i>
                         Crisis Support: Call 988
                     </small>
                 </div>
             </div>
         </div>
-        
+
         <hr class="my-4 border-secondary">
-        
+
         <div class="row align-items-center">
             <div class="col-md-6">
                 <small class="text-muted">&copy; <?= date('Y') ?> University Counseling System. All rights reserved.</small>

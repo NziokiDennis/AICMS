@@ -1,15 +1,14 @@
-<?php 
-session_start();
-
+<?php
+// contact.php (UPDATED)
 $message = '';
 if ($_POST) {
     // Simple form validation
-    $name = htmlspecialchars(trim($_POST['name'] ?? ''));
+    $name  = htmlspecialchars(trim($_POST['name'] ?? ''));
     $email = htmlspecialchars(trim($_POST['email'] ?? ''));
-    $msg = htmlspecialchars(trim($_POST['message'] ?? ''));
-    
+    $msg   = htmlspecialchars(trim($_POST['message'] ?? ''));
+
     if ($name && $email && $msg && filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        // In real implementation, send email or save to database
+        // In real implementation: persist or email.
         $message = '<div class="alert alert-success">Thank you! Your message has been sent successfully.</div>';
     } else {
         $message = '<div class="alert alert-danger">Please fill all fields with valid information.</div>';
@@ -28,7 +27,7 @@ if ($_POST) {
 </head>
 <body>
     <?php include 'includes/header.php'; ?>
-    
+
     <!-- Hero Section -->
     <section class="page-hero bg-primary text-white py-5">
         <div class="container">
@@ -55,7 +54,7 @@ if ($_POST) {
                         </div>
                         <div class="card-body p-4">
                             <?= $message ?>
-                            
+
                             <form method="POST" action="">
                                 <div class="row g-3">
                                     <div class="col-md-6">
@@ -68,8 +67,8 @@ if ($_POST) {
                                     </div>
                                     <div class="col-12">
                                         <label for="message" class="form-label">Message *</label>
-                                        <textarea class="form-control" id="message" name="message" rows="6" 
-                                                placeholder="Tell us how we can help you..." required></textarea>
+                                        <textarea class="form-control" id="message" name="message" rows="6"
+                                                  placeholder="Tell us how we can help you..." required></textarea>
                                     </div>
                                     <div class="col-12">
                                         <button type="submit" class="btn btn-primary btn-lg">
@@ -89,7 +88,7 @@ if ($_POST) {
                             <h4 class="card-title mb-4">
                                 <i class="fas fa-info-circle text-primary me-2"></i>Contact Information
                             </h4>
-                            
+
                             <div class="contact-info-item mb-3">
                                 <i class="fas fa-envelope text-primary me-3"></i>
                                 <div>
@@ -97,7 +96,7 @@ if ($_POST) {
                                     <a href="mailto:support@counseling.edu" class="text-decoration-none">support@counseling.edu</a>
                                 </div>
                             </div>
-                            
+
                             <div class="contact-info-item mb-3">
                                 <i class="fas fa-phone text-primary me-3"></i>
                                 <div>
@@ -105,7 +104,7 @@ if ($_POST) {
                                     <a href="tel:+15551234567" class="text-decoration-none">+1 (555) 123-4567</a>
                                 </div>
                             </div>
-                            
+
                             <div class="contact-info-item mb-3">
                                 <i class="fas fa-clock text-primary me-3"></i>
                                 <div>

@@ -7,8 +7,8 @@ define('DB_PASS', 'nzioki');
 
 try {
     $pdo = new PDO(
-        "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4", 
-        DB_USER, 
+        "mysql:host=" . DB_HOST . ";dbname=" . DB_NAME . ";charset=utf8mb4",
+        DB_USER,
         DB_PASS,
         [
             PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
@@ -16,7 +16,7 @@ try {
             PDO::ATTR_EMULATE_PREPARES => false
         ]
     );
-} catch(PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
+} catch (PDOException $e) {
+    throw new RuntimeException("Database connection failed: " . $e->getMessage());
 }
 ?>

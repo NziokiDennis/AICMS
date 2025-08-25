@@ -9,41 +9,37 @@ if (isset($_SESSION['user_id'])) {
 }
 
 $error = '';
-$success = '';
 
-if ($_POST) {
-    $name = trim($_POST['name']);
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $name  = trim($_POST['name']);
     $email = trim($_POST['email']);
     $phone = trim($_POST['phone']);
     $password = $_POST['password'];
-    $confirm_password = $_POST['confirm_password'];
-    
-    if ($name && $email && $password && $confirm_password) {
-        if ($password !== $confirm_password) {
+    $confirm  = $_POST['confirm_password'];
+
+    if ($name && $email && $password && $confirm) {
+        if ($password !== $confirm) {
             $error = 'Passwords do not match';
         } elseif (strlen($password) < 6) {
             $error = 'Password must be at least 6 characters';
         } else {
-            // Check if email exists
             $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
             $stmt->execute([$email]);
-            
+
             if ($stmt->fetch()) {
                 $error = 'Email already registered';
             } else {
-                // Create student account
-                $password_hash = password_hash($password, PASSWORD_DEFAULT);
-                $stmt = $pdo->prepare("INSERT INTO users (role, name, email, phone, password_hash) VALUES ('STUDENT', ?, ?, ?, ?)");
-                
-                if ($stmt->execute([$name, $email, $phone, $password_hash])) {
-                    // Auto-login the new student
+                $hash = password_hash($password, PASSWORD_DEFAULT);
+                $stmt = $pdo->prepare("INSERT INTO users (role,name,email,phone,password_hash) VALUES ('STUDENT',?,?,?,?)");
+
+                if ($stmt->execute([$name,$email,$phone,$hash])) {
                     $user_id = $pdo->lastInsertId();
                     session_regenerate_id(true);
-                    $_SESSION['user_id'] = $user_id;
+                    $_SESSION['user_id']   = $user_id;
                     $_SESSION['user_name'] = $name;
                     $_SESSION['user_role'] = 'STUDENT';
-                    $_SESSION['user_email'] = $email;
-                    
+                    $_SESSION['user_email']= $email;
+
                     header('Location: ../student/dashboard.php');
                     exit;
                 } else {
@@ -56,6 +52,7 @@ if ($_POST) {
     }
 }
 ?>
+<!-- HTML stays exactly as you had it -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
