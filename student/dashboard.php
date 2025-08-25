@@ -5,213 +5,311 @@ require_once '../includes/auth_check.php';
 
 requireAuth(['STUDENT']);
 
-// Get student's appointments
-$stmt = $pdo->prepare("
-    SELECT a.*, u.name as counselor_name, cp.specialty, cp.meeting_mode
-    FROM appointments a 
-    JOIN users u ON a.counselor_id = u.id 
-    LEFT JOIN counselor_profiles cp ON u.id = cp.user_id 
-    WHERE a.student_id = ? 
-    ORDER BY a.start_time DESC
-");
-$stmt->execute([$_SESSION['user_id']]);
-$appointments = $stmt->fetchAll();
+$counselor_id = $_GET['counselor_id'] ?? null;
+if (!$counselor_id) {
+    header('Location: find_counselor.php');
+    exit;
+}
 
-// Get published notes for this student
+// Get counselor info
 $stmt = $pdo->prepare("
-    SELECT n.*, s.id as session_id, u.name as counselor_name, a.start_time
-    FROM notes n
-    JOIN sessions s ON n.session_id = s.id
-    JOIN appointments a ON s.appointment_id = a.id
-    JOIN users u ON n.counselor_id = u.id
-    WHERE a.student_id = ? AND n.visibility = 'PUBLISHED'
-    ORDER BY n.created_at DESC
+    SELECT u.*, cp.* 
+    FROM users u 
+    JOIN counselor_profiles cp ON u.id = cp.user_id 
+    WHERE u.id = ? AND u.role = 'COUNSELOR'
 ");
-$stmt->execute([$_SESSION['user_id']]);
-$notes = $stmt->fetchAll();
+$stmt->execute([$counselor_id]);
+$counselor = $stmt->fetch();
+
+if (!$counselor) {
+    header('Location: find_counselor.php');
+    exit;
+}
+
+$success = '';
+$error = '';
+
+// Handle appointment booking
+if ($_POST) {
+    $slot_id = $_POST['slot_id'];
+    $message = trim($_POST['message']);
+    
+    if ($slot_id) {
+        // Get slot details
+        $stmt = $pdo->prepare("SELECT * FROM availability_slots WHERE id = ? AND counselor_id = ? AND status = 'OPEN'");
+        $stmt->execute([$slot_id, $counselor_id]);
+        $slot = $stmt->fetch();
+        
+        if ($slot) {
+            // Check if slot is still available (no pending/approved appointments)
+            $stmt = $pdo->prepare("
+                SELECT COUNT(*) FROM appointments 
+                WHERE counselor_id = ? AND start_time = ? AND status IN ('PENDING', 'APPROVED')
+            ");
+            $stmt->execute([$counselor_id, $slot['start_at']]);
+            $existing = $stmt->fetchColumn();
+            
+            if ($existing == 0) {
+                // Book the appointment
+                $stmt = $pdo->prepare("
+                    INSERT INTO appointments (student_id, counselor_id, start_time, end_time, message, status) 
+                    VALUES (?, ?, ?, ?, ?, 'PENDING')
+                ");
+                
+                if ($stmt->execute([$_SESSION['user_id'], $counselor_id, $slot['start_at'], $slot['end_at'], $message])) {
+                    $success = 'Appointment request sent successfully! You will be notified once the counselor approves it.';
+                } else {
+                    $error = 'Failed to book appointment. Please try again.';
+                }
+            } else {
+                $error = 'This slot is no longer available. Please select another time.';
+            }
+        } else {
+            $error = 'Invalid slot selected.';
+        }
+    } else {
+        $error = 'Please select a time slot.';
+    }
+}
+
+// Get available slots for the next 2 weeks
+$stmt = $pdo->prepare("
+    SELECT avs.* 
+    FROM availability_slots avs
+    WHERE avs.counselor_id = ? 
+    AND avs.status = 'OPEN'
+    AND avs.start_at >= NOW()
+    AND avs.start_at <= DATE_ADD(NOW(), INTERVAL 14 DAY)
+    AND NOT EXISTS (
+        SELECT 1 FROM appointments a 
+        WHERE a.counselor_id = avs.counselor_id 
+        AND a.start_time = avs.start_at 
+        AND a.status IN ('PENDING', 'APPROVED')
+    )
+    ORDER BY avs.start_at
+");
+$stmt->execute([$counselor_id]);
+$available_slots = $stmt->fetchAll();
+
+// Group slots by date
+$slots_by_date = [];
+foreach ($available_slots as $slot) {
+    $date = date('Y-m-d', strtotime($slot['start_at']));
+    if (!isset($slots_by_date[$date])) {
+        $slots_by_date[$date] = [];
+    }
+    $slots_by_date[$date][] = $slot;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Dashboard - Counseling Portal</title>
+    <title>Book Appointment - Counseling Portal</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="../assets/css/app.css" rel="stylesheet">
 </head>
 <body>
-    <?php include '../includes/header.php'; ?>
+    <!-- Student Navigation -->
+    <?php
+    // Determine current page for active nav highlighting
+    $current_page = basename($_SERVER['PHP_SELF'], '.php');
+    ?>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary" href="../index.php">
+                <i class="fas fa-brain me-2"></i>Happy Hearts
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link <?= $current_page === 'dashboard' ? 'active fw-bold' : '' ?>" href="dashboard.php">
+                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $current_page === 'find_counselor' ? 'active fw-bold' : '' ?>" href="find_counselor.php">
+                            <i class="fas fa-search me-1"></i>Find Counselor
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= $current_page === 'my_notes' ? 'active fw-bold' : '' ?>" href="my_notes.php">
+                            <i class="fas fa-sticky-note me-1"></i>My Notes
+                        </a>
+                    </li>
+                </ul>
+                
+                <ul class="navbar-nav">
+                    <?php if (isset($_SESSION['user_id'])): ?>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle me-1"></i><?= htmlspecialchars($_SESSION['user_name'] ?? 'Student') ?>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="dashboard.php">
+                                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                                </a></li>
+                                <li><a class="dropdown-item" href="find_counselor.php">
+                                    <i class="fas fa-search me-2"></i>Find Counselor
+                                </a></li>
+                                <li><a class="dropdown-item" href="my_notes.php">
+                                    <i class="fas fa-sticky-note me-2"></i>My Notes
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="../index.php">
+                                    <i class="fas fa-home me-2"></i>Main Site
+                                </a></li>
+                                <li><a class="dropdown-item" href="../auth/logout.php">
+                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                </a></li>
+                            </ul>
+                        </li>
+                    <?php endif; ?>
+                </ul>
+            </div>
+        </div>
+    </nav>
     
     <div class="container py-4">
         <div class="row">
             <div class="col-12">
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <div>
-                        <h2 class="fw-bold">Welcome back, <?= htmlspecialchars($_SESSION['user_name']) ?>!</h2>
-                        <p class="text-muted mb-0">Manage your counseling appointments and view session notes</p>
-                    </div>
-                    <a href="find_counselor.php" class="btn btn-primary">
-                        <i class="fas fa-plus me-2"></i>Book New Appointment
-                    </a>
-                </div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="dashboard.php">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="find_counselor.php">Find Counselor</a></li>
+                        <li class="breadcrumb-item active">Book Appointment</li>
+                    </ol>
+                </nav>
             </div>
         </div>
 
-        <div class="row g-4">
-            <!-- Quick Stats -->
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm text-center">
-                    <div class="card-body">
-                        <i class="fas fa-calendar-check text-primary fs-2 mb-3"></i>
-                        <h3 class="fw-bold"><?= count($appointments) ?></h3>
-                        <p class="text-muted mb-0">Total Appointments</p>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm text-center">
-                    <div class="card-body">
-                        <i class="fas fa-clock text-warning fs-2 mb-3"></i>
-                        <h3 class="fw-bold"><?= count(array_filter($appointments, fn($a) => $a['status'] === 'PENDING')) ?></h3>
-                        <p class="text-muted mb-0">Pending</p>
+        <div class="row">
+            <!-- Counselor Info -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-user-md fs-2"></i>
+                        </div>
+                        <h4><?= htmlspecialchars($counselor['name']) ?></h4>
+                        <p class="text-muted"><?= htmlspecialchars($counselor['specialty'] ?? 'General Counseling') ?></p>
+                        
+                        <?php if ($counselor['bio']): ?>
+                            <div class="text-start mt-3">
+                                <h6>About</h6>
+                                <p class="small text-muted"><?= htmlspecialchars($counselor['bio']) ?></p>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <div class="row g-2 mt-3">
+                            <div class="col-12">
+                                <div class="d-flex justify-content-between">
+                                    <small class="text-muted">Meeting Mode:</small>
+                                    <span class="badge bg-info">
+                                        <?php
+                                        $mode_icons = [
+                                            'IN_PERSON' => 'fas fa-user-friends',
+                                            'VIDEO' => 'fas fa-video',
+                                            'PHONE' => 'fas fa-phone'
+                                        ];
+                                        ?>
+                                        <i class="<?= $mode_icons[$counselor['meeting_mode']] ?? 'fas fa-question' ?> me-1"></i>
+                                        <?= str_replace('_', ' ', $counselor['meeting_mode'] ?? 'TBD') ?>
+                                    </span>
+                                </div>
+                            </div>
+                            <?php if ($counselor['location']): ?>
+                                <div class="col-12">
+                                    <div class="d-flex justify-content-between">
+                                        <small class="text-muted">Location:</small>
+                                        <small><?= htmlspecialchars($counselor['location']) ?></small>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm text-center">
-                    <div class="card-body">
-                        <i class="fas fa-check-circle text-success fs-2 mb-3"></i>
-                        <h3 class="fw-bold"><?= count(array_filter($appointments, fn($a) => $a['status'] === 'COMPLETED')) ?></h3>
-                        <p class="text-muted mb-0">Completed</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-md-3">
-                <div class="card border-0 shadow-sm text-center">
-                    <div class="card-body">
-                        <i class="fas fa-sticky-note text-info fs-2 mb-3"></i>
-                        <h3 class="fw-bold"><?= count($notes) ?></h3>
-                        <p class="text-muted mb-0">Session Notes</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row mt-4">
-            <!-- Recent Appointments -->
+            <!-- Booking Form -->
             <div class="col-lg-8">
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-white border-0 py-3">
                         <h5 class="mb-0 fw-bold">
-                            <i class="fas fa-calendar-alt text-primary me-2"></i>My Appointments
-                        </h5>
-                    </div>
-                    <div class="card-body p-0">
-                        <?php if (empty($appointments)): ?>
-                            <div class="text-center py-5">
-                                <i class="fas fa-calendar-plus text-muted fs-1 mb-3"></i>
-                                <h5 class="text-muted">No appointments yet</h5>
-                                <p class="text-muted">Book your first counseling session to get started</p>
-                                <a href="find_counselor.php" class="btn btn-primary">Find a Counselor</a>
-                            </div>
-                        <?php else: ?>
-                            <div class="table-responsive">
-                                <table class="table table-hover mb-0">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>Counselor</th>
-                                            <th>Specialty</th>
-                                            <th>Date & Time</th>
-                                            <th>Mode</th>
-                                            <th>Status</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($appointments as $appointment): ?>
-                                            <tr>
-                                                <td><?= htmlspecialchars($appointment['counselor_name']) ?></td>
-                                                <td><?= htmlspecialchars($appointment['specialty'] ?? 'General') ?></td>
-                                                <td><?= date('M j, Y g:i A', strtotime($appointment['start_time'])) ?></td>
-                                                <td>
-                                                    <?php
-                                                    $mode_icons = [
-                                                        'IN_PERSON' => 'fas fa-user-friends',
-                                                        'VIDEO' => 'fas fa-video',
-                                                        'PHONE' => 'fas fa-phone'
-                                                    ];
-                                                    $mode_text = str_replace('_', ' ', $appointment['meeting_mode'] ?? 'TBD');
-                                                    ?>
-                                                    <i class="<?= $mode_icons[$appointment['meeting_mode']] ?? 'fas fa-question' ?> me-1"></i>
-                                                    <?= $mode_text ?>
-                                                </td>
-                                                <td>
-                                                    <?php
-                                                    $status_classes = [
-                                                        'PENDING' => 'badge bg-warning',
-                                                        'APPROVED' => 'badge bg-success',
-                                                        'DECLINED' => 'badge bg-danger',
-                                                        'COMPLETED' => 'badge bg-primary',
-                                                        'CANCELLED' => 'badge bg-secondary'
-                                                    ];
-                                                    ?>
-                                                    <span class="<?= $status_classes[$appointment['status']] ?? 'badge bg-secondary' ?>">
-                                                        <?= $appointment['status'] ?>
-                                                    </span>
-                                                </td>
-                                                <td>
-                                                    <?php if ($appointment['status'] === 'COMPLETED'): ?>
-                                                        <a href="feedback.php?session_id=<?= $appointment['id'] ?>" class="btn btn-sm btn-outline-primary">
-                                                            <i class="fas fa-star me-1"></i>Feedback
-                                                        </a>
-                                                    <?php endif; ?>
-                                                </td>
-                                            </tr>
-                                        <?php endforeach; ?>
-                                    </tbody>
-                                </table>
-                            </div>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Recent Notes -->
-            <div class="col-lg-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white border-0 py-3">
-                        <h5 class="mb-0 fw-bold">
-                            <i class="fas fa-sticky-note text-info me-2"></i>Recent Notes
+                            <i class="fas fa-calendar-plus text-primary me-2"></i>Select Appointment Time
                         </h5>
                     </div>
                     <div class="card-body">
-                        <?php if (empty($notes)): ?>
-                            <div class="text-center py-4">
-                                <i class="fas fa-file-alt text-muted fs-3 mb-2"></i>
-                                <p class="text-muted mb-0">No session notes available</p>
+                        <?php if ($success): ?>
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle me-2"></i><?= $success ?>
+                                <div class="mt-2">
+                                    <a href="dashboard.php" class="btn btn-sm btn-outline-success">Go to Dashboard</a>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+
+                        <?php if ($error): ?>
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-triangle me-2"></i><?= $error ?>
+                            </div>
+                        <?php endif; ?>
+
+                        <?php if (empty($available_slots)): ?>
+                            <div class="text-center py-5">
+                                <i class="fas fa-calendar-times text-muted fs-1 mb-3"></i>
+                                <h5 class="text-muted">No Available Slots</h5>
+                                <p class="text-muted">This counselor has no available appointment slots in the next 2 weeks.</p>
+                                <a href="find_counselor.php" class="btn btn-outline-primary">Find Another Counselor</a>
                             </div>
                         <?php else: ?>
-                            <?php foreach (array_slice($notes, 0, 3) as $note): ?>
-                                <div class="border-bottom pb-3 mb-3">
-                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                        <strong class="text-primary"><?= htmlspecialchars($note['counselor_name']) ?></strong>
-                                        <small class="text-muted"><?= date('M j', strtotime($note['created_at'])) ?></small>
+                            <form method="POST" id="bookingForm">
+                                <div class="row g-4">
+                                    <div class="col-12">
+                                        <label class="form-label fw-bold">Available Time Slots</label>
+                                        <div class="row g-3">
+                                            <?php foreach ($slots_by_date as $date => $slots): ?>
+                                                <div class="col-12">
+                                                    <h6 class="text-primary mb-2">
+                                                        <?= date('l, F j, Y', strtotime($date)) ?>
+                                                    </h6>
+                                                    <div class="row g-2">
+                                                        <?php foreach ($slots as $slot): ?>
+                                                            <div class="col-6 col-md-4 col-lg-3">
+                                                                <input type="radio" class="btn-check" name="slot_id" 
+                                                                       value="<?= $slot['id'] ?>" id="slot_<?= $slot['id'] ?>">
+                                                                <label class="btn btn-outline-primary w-100 small" for="slot_<?= $slot['id'] ?>">
+                                                                    <?= date('g:i A', strtotime($slot['start_at'])) ?>
+                                                                </label>
+                                                            </div>
+                                                        <?php endforeach; ?>
+                                                    </div>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        </div>
                                     </div>
-                                    <p class="mb-0 small text-muted">
-                                        <?= htmlspecialchars(substr($note['content'], 0, 100)) ?>
-                                        <?= strlen($note['content']) > 100 ? '...' : '' ?>
-                                    </p>
+
+                                    <div class="col-12">
+                                        <label for="message" class="form-label">Message to Counselor (Optional)</label>
+                                        <textarea class="form-control" id="message" name="message" rows="3" 
+                                                  placeholder="Briefly describe what you'd like to discuss..."></textarea>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <button type="submit" class="btn btn-primary btn-lg">
+                                            <i class="fas fa-paper-plane me-2"></i>Request Appointment
+                                        </button>
+                                        <a href="find_counselor.php" class="btn btn-outline-secondary btn-lg ms-2">Cancel</a>
+                                    </div>
                                 </div>
-                            <?php endforeach; ?>
-                            <?php if (count($notes) > 3): ?>
-                                <div class="text-center">
-                                    <a href="my_notes.php" class="btn btn-sm btn-outline-info">View All Notes</a>
-                                </div>
-                            <?php endif; ?>
+                            </form>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -220,5 +318,17 @@ $notes = $stmt->fetchAll();
     </div>
 
     <?php include '../includes/footer.php'; ?>
+    
+    <script>
+        // Form validation
+        document.getElementById('bookingForm')?.addEventListener('submit', function(e) {
+            const selectedSlot = document.querySelector('input[name="slot_id"]:checked');
+            if (!selectedSlot) {
+                e.preventDefault();
+                alert('Please select a time slot for your appointment.');
+                return false;
+            }
+        });
+    </script>
 </body>
 </html>
