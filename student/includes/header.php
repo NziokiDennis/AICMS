@@ -1,7 +1,10 @@
 <?php
-// Determine current page for active nav highlighting
-$current_page = basename($_SERVER['PHP_SELF'], '.php');
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+$current_page = basename(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '.php');
 ?>
+
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
     <div class="container">
         <!-- Brand: keep users inside /student -->
@@ -17,27 +20,27 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
             <!-- LEFT: Primary nav (all inside /student) -->
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link <?= $current_page === 'dashboard' ? 'active fw-bold' : '' ?>" href="/student/dashboard.php">
+                    <a class="nav-link <?= $current_page === 'dashboard' ? 'active fw-bold' : '' ?>" href="dashboard.php">
                         <i class="fas fa-tachometer-alt me-1"></i>Dashboard
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= $current_page === 'find_counselor' ? 'active fw-bold' : '' ?>" href="/student/find_counselor.php">
+                    <a class="nav-link <?= $current_page === 'find_counselor' ? 'active fw-bold' : '' ?>" href="find_counselor.php">
                         <i class="fas fa-search me-1"></i>Find Counselor
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= $current_page === 'book_appointment' ? 'active fw-bold' : '' ?>" href="/student/book_appointment.php">
+                    <a class="nav-link <?= $current_page === 'book_appointment' ? 'active fw-bold' : '' ?>" href="book_appointment.php">
                         <i class="fas fa-calendar-plus me-1"></i>Book Appointment
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= $current_page === 'my_notes' ? 'active fw-bold' : '' ?>" href="/student/my_notes.php">
+                    <a class="nav-link <?= $current_page === 'my_notes' ? 'active fw-bold' : '' ?>" href="my_notes.php">
                         <i class="fas fa-sticky-note me-1"></i>My Notes
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link <?= $current_page === 'feedback' ? 'active fw-bold' : '' ?>" href="/student/feedback.php">
+                    <a class="nav-link <?= $current_page === 'feedback' ? 'active fw-bold' : '' ?>" href="feedback.php">
                         <i class="fas fa-star me-1"></i>Feedback
                     </a>
                 </li>
@@ -70,7 +73,6 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
                                 <i class="fas fa-star me-2"></i>Feedback
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <!-- Only Logout goes outside /student -->
                             <li><a class="dropdown-item" href="/index.php">
                                 <i class="fas fa-sign-out-alt me-2"></i>Logout
                             </a></li>
@@ -78,7 +80,6 @@ $current_page = basename($_SERVER['PHP_SELF'], '.php');
                     </li>
                 <?php else: ?>
                     <li class="nav-item">
-                        <!-- keep auth within app; if your login lives elsewhere, adjust path -->
                         <a class="nav-link" href="/auth/login.php">
                             <i class="fas fa-sign-in-alt me-1"></i>Login
                         </a>

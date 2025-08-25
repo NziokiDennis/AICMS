@@ -69,73 +69,7 @@ $feedback_needed = $stmt->fetchAll();
     <link href="../assets/css/app.css" rel="stylesheet">
 </head>
 <body class="bg-light">
-    <!-- Student Navigation -->
-    <?php
-    // Determine current page for active nav highlighting
-    $current_page = basename($_SERVER['PHP_SELF'], '.php');
-    ?>
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
-        <div class="container">
-            <a class="navbar-brand fw-bold text-primary" href="../index.php">
-                <i class="fas fa-brain me-2"></i>Happy Hearts
-            </a>
-            
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link <?= $current_page === 'dashboard' ? 'active fw-bold' : '' ?>" href="dashboard.php">
-                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link <?= $current_page === 'find_counselor' ? 'active fw-bold' : '' ?>" href="find_counselor.php">
-                            <i class="fas fa-search me-1"></i>Find Counselor
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link <?= $current_page === 'my_notes' ? 'active fw-bold' : '' ?>" href="my_notes.php">
-                            <i class="fas fa-sticky-note me-1"></i>My Notes
-                        </a>
-                    </li>
-                </ul>
-                
-                <ul class="navbar-nav">
-                    <?php if (isset($_SESSION['user_id'])): ?>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
-                                    <i class="fas fa-user"></i>
-                                </div>
-                                <?= htmlspecialchars($_SESSION['user_name'] ?? 'Student') ?>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="dashboard.php">
-                                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                                </a></li>
-                                <li><a class="dropdown-item" href="find_counselor.php">
-                                    <i class="fas fa-search me-2"></i>Find Counselor
-                                </a></li>
-                                <li><a class="dropdown-item" href="my_notes.php">
-                                    <i class="fas fa-sticky-note me-2"></i>My Notes
-                                </a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="../index.php">
-                                    <i class="fas fa-home me-2"></i>Main Site
-                                </a></li>
-                                <li><a class="dropdown-item" href="../auth/logout.php">
-                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
-                                </a></li>
-                            </ul>
-                        </li>
-                    <?php endif; ?>
-                </ul>
-            </div>
-        </div>
-    </nav>
+    <?php include 'includes/header.php'; ?>
     
     <!-- Hero Section -->
     <div class="bg-gradient-primary text-white py-5">
@@ -252,13 +186,16 @@ $feedback_needed = $stmt->fetchAll();
             <div class="col-lg-4">
                 <div class="card border-0 shadow-sm h-100 hover-lift">
                     <div class="card-body text-center p-4">
-                        <div class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
-                            <i class="fas fa-question-circle" style="font-size: 2rem;"></i>
+                        <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-star" style="font-size: 2rem;"></i>
                         </div>
-                        <h5 class="fw-bold mb-3">Get Support</h5>
-                        <p class="text-muted mb-3">Need help or have questions? We're here to support you</p>
-                        <a href="../index.php#contact" class="btn btn-info btn-lg">
-                            <i class="fas fa-life-ring me-2"></i>Contact Us
+                        <h5 class="fw-bold mb-3">Provide Feedback</h5>
+                        <p class="text-muted mb-3">Share your experience to help us improve our services</p>
+                        <a href="feedback.php" class="btn btn-warning btn-lg">
+                            <i class="fas fa-star me-2"></i>Give Feedback
+                            <?php if (count($feedback_needed) > 0): ?>
+                                <span class="badge bg-white text-warning ms-2"><?= count($feedback_needed) ?></span>
+                            <?php endif; ?>
                         </a>
                     </div>
                 </div>
@@ -337,26 +274,47 @@ $feedback_needed = $stmt->fetchAll();
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-header bg-warning bg-opacity-10 border-0 py-3">
                             <h5 class="fw-bold mb-0 text-warning">
-                                <i class="fas fa-star me-2"></i>Feedback Needed
+                                <i class="fas fa-star me-2"></i>Feedback Needed (<?= count($feedback_needed) ?>)
                             </h5>
                         </div>
                         <div class="card-body">
-                            <p class="small text-muted mb-3">Help us improve by sharing your experience</p>
+                            <p class="small text-muted mb-3">Help us improve by sharing your experience with these completed sessions</p>
                             <?php foreach ($feedback_needed as $session): ?>
-                                <div class="border-start border-warning ps-3 mb-3">
-                                    <h6 class="mb-1"><?= htmlspecialchars($session['counselor_name']) ?></h6>
-                                    <p class="small text-muted mb-2">
-                                        Session: <?= date('M j, Y', strtotime($session['start_time'])) ?>
-                                    </p>
-                                    <a href="feedback.php?session_id=<?= $session['id'] ?>" class="btn btn-sm btn-warning">
-                                        <i class="fas fa-star me-1"></i>Leave Feedback
-                                    </a>
+                                <div class="border-start border-warning border-3 ps-3 mb-3 bg-light rounded-end p-3">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h6 class="mb-1 fw-bold"><?= htmlspecialchars($session['counselor_name']) ?></h6>
+                                            <?php if ($session['specialty']): ?>
+                                                <span class="badge bg-secondary small mb-2">
+                                                    <?= htmlspecialchars($session['specialty']) ?>
+                                                </span>
+                                            <?php endif; ?>
+                                            <p class="small text-muted mb-2">
+                                                <i class="fas fa-calendar me-1"></i>
+                                                Session: <?= date('M j, Y g:i A', strtotime($session['start_time'])) ?>
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-2">
+                                        <a href="feedback.php?session_id=<?= $session['id'] ?>" class="btn btn-sm btn-warning">
+                                            <i class="fas fa-star me-1"></i>Leave Feedback
+                                        </a>
+                                        <small class="text-muted ms-2">
+                                            <i class="fas fa-clock me-1"></i>
+                                            Session ended <?= date('M j', strtotime($session['end_time'])) ?>
+                                        </small>
+                                    </div>
                                 </div>
                             <?php endforeach; ?>
+                            <div class="mt-3 pt-2 border-top">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Your feedback helps improve our counseling services and helps other students find the right counselor.
+                                </small>
+                            </div>
                         </div>
                     </div>
                 <?php endif; ?>
-
                 <!-- Quick Tips -->
                 <div class="card border-0 shadow-sm">
                     <div class="card-header bg-info bg-opacity-10 border-0 py-3">
