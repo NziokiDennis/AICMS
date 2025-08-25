@@ -674,7 +674,7 @@ while ($row = $stmt->fetch()) {
         </div>
     </div>
 
-    <?php include './includes/footer.php'; ?>
+    <?php include '../includes/footer.php'; ?>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {

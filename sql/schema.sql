@@ -230,3 +230,22 @@ end_time = CASE id
     WHEN 3 THEN '2025-09-02 14:00:00'
 END
 WHERE id IN (1, 2, 3);
+
+ALTER TABLE appointments
+ADD COLUMN updated_at TIMESTAMP NULL DEFAULT NULL
+AFTER created_at;
+
+DELIMITER //
+
+CREATE TRIGGER update_appointments_updated_at
+BEFORE UPDATE ON appointments
+FOR EACH ROW
+BEGIN
+    SET NEW.updated_at = CURRENT_TIMESTAMP;
+END//
+
+DELIMITER ;
+
+UPDATE appointments
+SET updated_at = created_at
+WHERE status IN ('APPROVED', 'DECLINED') AND updated_at IS NULL;

@@ -74,72 +74,82 @@ $report_count = 5; // Total number of reports
         <!-- Report Cards -->
         <div class="row g-4">
             <div class="col-md-6 col-lg-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex flex-column">
                         <h5 class="card-title fw-bold">
                             <i class="fas fa-analytics me-2 text-primary"></i>Usage Analytics
                         </h5>
-                        <p class="card-text text-muted">View system usage metrics, including appointment trends and completion rates over time.</p>
-                        <a href="usage_analytics.php" class="btn btn-primary">
+                        <p class="card-text text-muted flex-grow-1">
+                            View system usage metrics, including appointment trends and completion rates over time.
+                        </p>
+                        <a href="usage_analytics.php" class="btn btn-primary mt-auto">
                             <i class="fas fa-eye me-2"></i>View Report
                         </a>
                     </div>
                 </div>
             </div>
             <div class="col-md-6 col-lg-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex flex-column">
                         <h5 class="card-title fw-bold">
                             <i class="fas fa-user-md me-2 text-success"></i>Counselor Performance
                         </h5>
-                        <p class="card-text text-muted">Analyze counselor performance metrics (Under Development).</p>
-                        <a href="counselor_performance.php" class="btn btn-secondary disabled">
+                        <p class="card-text text-muted flex-grow-1">
+                            Analyze counselor performance metrics.
+                        </p>
+                        <a href="counselor_performance.php" class="btn btn-success mt-auto">
                             <i class="fas fa-eye me-2"></i>View Report
                         </a>
                     </div>
                 </div>
             </div>
             <div class="col-md-6 col-lg-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex flex-column">
                         <h5 class="card-title fw-bold">
                             <i class="fas fa-graduation-cap me-2 text-info"></i>Student Engagement
                         </h5>
-                        <p class="card-text text-muted">Track student engagement patterns (Under Development).</p>
-                        <a href="student_engagement.php" class="btn btn-secondary disabled">
+                        <p class="card-text text-muted flex-grow-1">
+                            Track student engagement patterns.
+                        </p>
+                        <a href="student_engagement.php" class="btn btn-info mt-auto">
                             <i class="fas fa-eye me-2"></i>View Report
                         </a>
                     </div>
                 </div>
             </div>
             <div class="col-md-6 col-lg-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex flex-column">
                         <h5 class="card-title fw-bold">
                             <i class="fas fa-heartbeat me-2 text-danger"></i>System Health
                         </h5>
-                        <p class="card-text text-muted">Monitor system performance and errors (Under Development).</p>
-                        <a href="system_health.php" class="btn btn-secondary disabled">
+                        <p class="card-text text-muted flex-grow-1">
+                            Monitor system performance and errors.
+                        </p>
+                        <a href="system_health.php" class="btn btn-danger mt-auto">
                             <i class="fas fa-eye me-2"></i>View Report
                         </a>
                     </div>
                 </div>
             </div>
             <div class="col-md-6 col-lg-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body d-flex flex-column">
                         <h5 class="card-title fw-bold">
                             <i class="fas fa-clipboard-check me-2 text-warning"></i>Compliance
                         </h5>
-                        <p class="card-text text-muted">Review compliance metrics and audit logs (Under Development).</p>
-                        <a href="compliance_report.php" class="btn btn-secondary disabled">
+                        <p class="card-text text-muted flex-grow-1">
+                            Review compliance metrics and audit logs.
+                        </p>
+                        <a href="compliance_report.php" class="btn btn-warning mt-auto">
                             <i class="fas fa-eye me-2"></i>View Report
                         </a>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
+
 
     <?php include '../../includes/footer.php'; ?>
     

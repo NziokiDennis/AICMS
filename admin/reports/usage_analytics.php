@@ -191,8 +191,34 @@ $student_metrics = $stmt->fetch();
     <link href="../../assets/css/app.css" rel="stylesheet">
 </head>
 <body class="bg-light">
-    <?php include '../includes/admin_header.php'; ?>
-    
+<!-- Reports Navigation -->
+    <div class="container-fluid bg-white border-bottom mb-4">
+        <nav class="nav nav-pills px-3 py-2">
+            <a class="nav-link <?= $current_report === 'usage_analytics.php' ? 'active' : '' ?>" 
+               href="usage_analytics.php">
+               <i class="fas fa-chart-line me-1"></i>Usage Analytics
+            </a>
+            <a class="nav-link <?= $current_report === 'counselor_performance.php' ? 'active' : '' ?>" 
+               href="counselor_performance.php">
+               <i class="fas fa-user-md me-1"></i>Counselor Performance
+            </a>
+            <a class="nav-link <?= $current_report === 'student_engagement.php' ? 'active' : '' ?>" 
+               href="student_engagement.php">
+               <i class="fas fa-graduation-cap me-1"></i>Student Engagement
+            </a>
+            <a class="nav-link <?= $current_report === 'system_health.php' ? 'active' : '' ?>" 
+               href="system_health.php">
+               <i class="fas fa-heartbeat me-1"></i>System Health
+            </a>
+            <a class="nav-link <?= $current_report === 'compliance_report.php' ? 'active' : '' ?>" 
+               href="compliance_report.php">
+               <i class="fas fa-clipboard-check me-1"></i>Compliance
+            </a>
+            <a class="nav-link ms-auto text-danger fw-bold" href="dashboard.php">
+               <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+            </a>
+        </nav>
+    </div>    
     <div class="container-fluid py-4">
         <div class="row">
             <div class="col-12">
