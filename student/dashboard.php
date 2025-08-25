@@ -5,119 +5,76 @@ require_once '../includes/auth_check.php';
 
 requireAuth(['STUDENT']);
 
-$counselor_id = $_GET['counselor_id'] ?? null;
-if (!$counselor_id) {
-    header('Location: find_counselor.php');
-    exit;
-}
-
-// Get counselor info
+// Get student's upcoming appointments
 $stmt = $pdo->prepare("
-    SELECT u.*, cp.* 
-    FROM users u 
-    JOIN counselor_profiles cp ON u.id = cp.user_id 
-    WHERE u.id = ? AND u.role = 'COUNSELOR'
+    SELECT a.*, u.name as counselor_name, cp.specialty, cp.meeting_mode, cp.location
+    FROM appointments a
+    JOIN users u ON a.counselor_id = u.id
+    LEFT JOIN counselor_profiles cp ON u.id = cp.user_id
+    WHERE a.student_id = ? AND a.status IN ('PENDING', 'APPROVED') 
+    AND a.start_time >= NOW()
+    ORDER BY a.start_time ASC
+    LIMIT 3
 ");
-$stmt->execute([$counselor_id]);
-$counselor = $stmt->fetch();
+$stmt->execute([$_SESSION['user_id']]);
+$upcoming_appointments = $stmt->fetchAll();
 
-if (!$counselor) {
-    header('Location: find_counselor.php');
-    exit;
-}
+// Get recent completed sessions count
+$stmt = $pdo->prepare("SELECT COUNT(*) FROM appointments WHERE student_id = ? AND status = 'COMPLETED'");
+$stmt->execute([$_SESSION['user_id']]);
+$completed_sessions = $stmt->fetchColumn();
 
-$success = '';
-$error = '';
+// Get pending appointments count
+$stmt = $pdo->prepare("SELECT COUNT(*) FROM appointments WHERE student_id = ? AND status = 'PENDING'");
+$stmt->execute([$_SESSION['user_id']]);
+$pending_appointments = $stmt->fetchColumn();
 
-// Handle appointment booking
-if ($_POST) {
-    $slot_id = $_POST['slot_id'];
-    $message = trim($_POST['message']);
-    
-    if ($slot_id) {
-        // Get slot details
-        $stmt = $pdo->prepare("SELECT * FROM availability_slots WHERE id = ? AND counselor_id = ? AND status = 'OPEN'");
-        $stmt->execute([$slot_id, $counselor_id]);
-        $slot = $stmt->fetch();
-        
-        if ($slot) {
-            // Check if slot is still available (no pending/approved appointments)
-            $stmt = $pdo->prepare("
-                SELECT COUNT(*) FROM appointments 
-                WHERE counselor_id = ? AND start_time = ? AND status IN ('PENDING', 'APPROVED')
-            ");
-            $stmt->execute([$counselor_id, $slot['start_at']]);
-            $existing = $stmt->fetchColumn();
-            
-            if ($existing == 0) {
-                // Book the appointment
-                $stmt = $pdo->prepare("
-                    INSERT INTO appointments (student_id, counselor_id, start_time, end_time, message, status) 
-                    VALUES (?, ?, ?, ?, ?, 'PENDING')
-                ");
-                
-                if ($stmt->execute([$_SESSION['user_id'], $counselor_id, $slot['start_at'], $slot['end_at'], $message])) {
-                    $success = 'Appointment request sent successfully! You will be notified once the counselor approves it.';
-                } else {
-                    $error = 'Failed to book appointment. Please try again.';
-                }
-            } else {
-                $error = 'This slot is no longer available. Please select another time.';
-            }
-        } else {
-            $error = 'Invalid slot selected.';
-        }
-    } else {
-        $error = 'Please select a time slot.';
-    }
-}
-
-// Get available slots for the next 2 weeks
+// Get published notes count
 $stmt = $pdo->prepare("
-    SELECT avs.* 
-    FROM availability_slots avs
-    WHERE avs.counselor_id = ? 
-    AND avs.status = 'OPEN'
-    AND avs.start_at >= NOW()
-    AND avs.start_at <= DATE_ADD(NOW(), INTERVAL 14 DAY)
+    SELECT COUNT(*)
+    FROM notes n
+    JOIN sessions s ON n.session_id = s.id
+    JOIN appointments a ON s.appointment_id = a.id
+    WHERE a.student_id = ? AND n.visibility = 'PUBLISHED'
+");
+$stmt->execute([$_SESSION['user_id']]);
+$available_notes = $stmt->fetchColumn();
+
+// Get recent feedback requests (completed sessions without feedback)
+$stmt = $pdo->prepare("
+    SELECT s.*, a.start_time, a.end_time, u.name as counselor_name, cp.specialty
+    FROM sessions s
+    JOIN appointments a ON s.appointment_id = a.id
+    JOIN users u ON a.counselor_id = u.id
+    LEFT JOIN counselor_profiles cp ON u.id = cp.user_id
+    WHERE a.student_id = ? AND a.status = 'COMPLETED'
     AND NOT EXISTS (
-        SELECT 1 FROM appointments a 
-        WHERE a.counselor_id = avs.counselor_id 
-        AND a.start_time = avs.start_at 
-        AND a.status IN ('PENDING', 'APPROVED')
+        SELECT 1 FROM feedback f 
+        WHERE f.student_id = a.student_id AND f.session_id = s.id
     )
-    ORDER BY avs.start_at
+    ORDER BY a.end_time DESC
+    LIMIT 2
 ");
-$stmt->execute([$counselor_id]);
-$available_slots = $stmt->fetchAll();
-
-// Group slots by date
-$slots_by_date = [];
-foreach ($available_slots as $slot) {
-    $date = date('Y-m-d', strtotime($slot['start_at']));
-    if (!isset($slots_by_date[$date])) {
-        $slots_by_date[$date] = [];
-    }
-    $slots_by_date[$date][] = $slot;
-}
+$stmt->execute([$_SESSION['user_id']]);
+$feedback_needed = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Appointment - Counseling Portal</title>
+    <title>Student Dashboard - Happy Hearts Counseling</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="../assets/css/app.css" rel="stylesheet">
 </head>
-<body>
+<body class="bg-light">
     <!-- Student Navigation -->
     <?php
     // Determine current page for active nav highlighting
     $current_page = basename($_SERVER['PHP_SELF'], '.php');
     ?>
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
         <div class="container">
             <a class="navbar-brand fw-bold text-primary" href="../index.php">
                 <i class="fas fa-brain me-2"></i>Happy Hearts
@@ -149,10 +106,13 @@ foreach ($available_slots as $slot) {
                 <ul class="navbar-nav">
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user-circle me-1"></i><?= htmlspecialchars($_SESSION['user_name'] ?? 'Student') ?>
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <?= htmlspecialchars($_SESSION['user_name'] ?? 'Student') ?>
                             </a>
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu dropdown-menu-end">
                                 <li><a class="dropdown-item" href="dashboard.php">
                                     <i class="fas fa-tachometer-alt me-2"></i>Dashboard
                                 </a></li>
@@ -177,140 +137,248 @@ foreach ($available_slots as $slot) {
         </div>
     </nav>
     
-    <div class="container py-4">
-        <div class="row">
-            <div class="col-12">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item"><a href="dashboard.php">Dashboard</a></li>
-                        <li class="breadcrumb-item"><a href="find_counselor.php">Find Counselor</a></li>
-                        <li class="breadcrumb-item active">Book Appointment</li>
-                    </ol>
-                </nav>
+    <!-- Hero Section -->
+    <div class="bg-gradient-primary text-white py-5">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <h1 class="display-5 fw-bold mb-3">
+                        Welcome back, <?= htmlspecialchars($_SESSION['user_name'] ?? 'Student') ?>! 👋
+                    </h1>
+                    <p class="lead mb-4">Ready to continue your wellness journey? Let's see what's on your schedule today.</p>
+                </div>
+                <div class="col-lg-4 text-center">
+                    <div class="bg-white bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 120px; height: 120px;">
+                        <i class="fas fa-heart text-white" style="font-size: 3rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container py-5">
+        <!-- Quick Stats -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100 text-center hover-lift">
+                    <div class="card-body">
+                        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-calendar-check fs-4"></i>
+                        </div>
+                        <h3 class="fw-bold text-primary"><?= $completed_sessions ?></h3>
+                        <p class="text-muted mb-0">Completed Sessions</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100 text-center hover-lift">
+                    <div class="card-body">
+                        <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-clock fs-4"></i>
+                        </div>
+                        <h3 class="fw-bold text-warning"><?= $pending_appointments ?></h3>
+                        <p class="text-muted mb-0">Pending Requests</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100 text-center hover-lift">
+                    <div class="card-body">
+                        <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-file-alt fs-4"></i>
+                        </div>
+                        <h3 class="fw-bold text-success"><?= $available_notes ?></h3>
+                        <p class="text-muted mb-0">Session Notes</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm h-100 text-center hover-lift">
+                    <div class="card-body">
+                        <div class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-star fs-4"></i>
+                        </div>
+                        <h3 class="fw-bold text-info"><?= count($feedback_needed) ?></h3>
+                        <p class="text-muted mb-0">Feedback Needed</p>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <div class="row">
-            <!-- Counselor Info -->
+        <!-- Quick Actions -->
+        <div class="row g-4 mb-5">
+            <div class="col-12">
+                <h3 class="fw-bold mb-4">
+                    <i class="fas fa-bolt text-primary me-2"></i>Quick Actions
+                </h3>
+            </div>
+            
             <div class="col-lg-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body text-center">
+                <div class="card border-0 shadow-sm h-100 hover-lift">
+                    <div class="card-body text-center p-4">
                         <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
-                            <i class="fas fa-user-md fs-2"></i>
+                            <i class="fas fa-user-md" style="font-size: 2rem;"></i>
                         </div>
-                        <h4><?= htmlspecialchars($counselor['name']) ?></h4>
-                        <p class="text-muted"><?= htmlspecialchars($counselor['specialty'] ?? 'General Counseling') ?></p>
-                        
-                        <?php if ($counselor['bio']): ?>
-                            <div class="text-start mt-3">
-                                <h6>About</h6>
-                                <p class="small text-muted"><?= htmlspecialchars($counselor['bio']) ?></p>
+                        <h5 class="fw-bold mb-3">Find a Counselor</h5>
+                        <p class="text-muted mb-3">Browse our qualified counselors and book your next appointment</p>
+                        <a href="find_counselor.php" class="btn btn-primary btn-lg">
+                            <i class="fas fa-search me-2"></i>Browse Counselors
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm h-100 hover-lift">
+                    <div class="card-body text-center p-4">
+                        <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-sticky-note" style="font-size: 2rem;"></i>
+                        </div>
+                        <h5 class="fw-bold mb-3">View Session Notes</h5>
+                        <p class="text-muted mb-3">Access notes from your completed counseling sessions</p>
+                        <a href="my_notes.php" class="btn btn-success btn-lg">
+                            <i class="fas fa-eye me-2"></i>View Notes
+                            <?php if ($available_notes > 0): ?>
+                                <span class="badge bg-white text-success ms-2"><?= $available_notes ?></span>
+                            <?php endif; ?>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm h-100 hover-lift">
+                    <div class="card-body text-center p-4">
+                        <div class="bg-info text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="fas fa-question-circle" style="font-size: 2rem;"></i>
+                        </div>
+                        <h5 class="fw-bold mb-3">Get Support</h5>
+                        <p class="text-muted mb-3">Need help or have questions? We're here to support you</p>
+                        <a href="../index.php#contact" class="btn btn-info btn-lg">
+                            <i class="fas fa-life-ring me-2"></i>Contact Us
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Upcoming Appointments -->
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white border-0 py-4">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="fw-bold mb-0">
+                                <i class="fas fa-calendar-alt text-primary me-2"></i>Upcoming Appointments
+                            </h4>
+                            <a href="find_counselor.php" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-plus me-1"></i>Book New
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <?php if (empty($upcoming_appointments)): ?>
+                            <div class="text-center py-4">
+                                <i class="fas fa-calendar-times text-muted fs-1 mb-3"></i>
+                                <h5 class="text-muted">No upcoming appointments</h5>
+                                <p class="text-muted mb-3">Schedule your next session to continue your wellness journey</p>
+                                <a href="find_counselor.php" class="btn btn-primary">
+                                    <i class="fas fa-calendar-plus me-2"></i>Book Appointment
+                                </a>
+                            </div>
+                        <?php else: ?>
+                            <div class="list-group list-group-flush">
+                                <?php foreach ($upcoming_appointments as $appointment): ?>
+                                    <div class="list-group-item border-0 px-0">
+                                        <div class="d-flex align-items-center">
+                                            <div class="me-3">
+                                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                                    <i class="fas fa-user-md"></i>
+                                                </div>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h6 class="mb-1 fw-bold"><?= htmlspecialchars($appointment['counselor_name']) ?></h6>
+                                                <p class="mb-1 text-muted small">
+                                                    <i class="fas fa-calendar me-1"></i>
+                                                    <?= date('l, M j, Y', strtotime($appointment['start_time'])) ?>
+                                                </p>
+                                                <p class="mb-1 text-muted small">
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    <?= date('g:i A', strtotime($appointment['start_time'])) ?> - 
+                                                    <?= date('g:i A', strtotime($appointment['end_time'])) ?>
+                                                </p>
+                                                <?php if ($appointment['specialty']): ?>
+                                                    <span class="badge bg-light text-dark">
+                                                        <i class="fas fa-tag me-1"></i><?= htmlspecialchars($appointment['specialty']) ?>
+                                                    </span>
+                                                <?php endif; ?>
+                                            </div>
+                                            <div class="text-end">
+                                                <span class="badge <?= $appointment['status'] === 'APPROVED' ? 'bg-success' : 'bg-warning' ?>">
+                                                    <?= ucfirst(strtolower($appointment['status'])) ?>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
                             </div>
                         <?php endif; ?>
-                        
-                        <div class="row g-2 mt-3">
-                            <div class="col-12">
-                                <div class="d-flex justify-content-between">
-                                    <small class="text-muted">Meeting Mode:</small>
-                                    <span class="badge bg-info">
-                                        <?php
-                                        $mode_icons = [
-                                            'IN_PERSON' => 'fas fa-user-friends',
-                                            'VIDEO' => 'fas fa-video',
-                                            'PHONE' => 'fas fa-phone'
-                                        ];
-                                        ?>
-                                        <i class="<?= $mode_icons[$counselor['meeting_mode']] ?? 'fas fa-question' ?> me-1"></i>
-                                        <?= str_replace('_', ' ', $counselor['meeting_mode'] ?? 'TBD') ?>
-                                    </span>
-                                </div>
-                            </div>
-                            <?php if ($counselor['location']): ?>
-                                <div class="col-12">
-                                    <div class="d-flex justify-content-between">
-                                        <small class="text-muted">Location:</small>
-                                        <small><?= htmlspecialchars($counselor['location']) ?></small>
-                                    </div>
-                                </div>
-                            <?php endif; ?>
-                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Booking Form -->
-            <div class="col-lg-8">
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Feedback Reminders -->
+                <?php if (!empty($feedback_needed)): ?>
+                    <div class="card border-0 shadow-sm mb-4">
+                        <div class="card-header bg-warning bg-opacity-10 border-0 py-3">
+                            <h5 class="fw-bold mb-0 text-warning">
+                                <i class="fas fa-star me-2"></i>Feedback Needed
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="small text-muted mb-3">Help us improve by sharing your experience</p>
+                            <?php foreach ($feedback_needed as $session): ?>
+                                <div class="border-start border-warning ps-3 mb-3">
+                                    <h6 class="mb-1"><?= htmlspecialchars($session['counselor_name']) ?></h6>
+                                    <p class="small text-muted mb-2">
+                                        Session: <?= date('M j, Y', strtotime($session['start_time'])) ?>
+                                    </p>
+                                    <a href="feedback.php?session_id=<?= $session['id'] ?>" class="btn btn-sm btn-warning">
+                                        <i class="fas fa-star me-1"></i>Leave Feedback
+                                    </a>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+                <!-- Quick Tips -->
                 <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white border-0 py-3">
-                        <h5 class="mb-0 fw-bold">
-                            <i class="fas fa-calendar-plus text-primary me-2"></i>Select Appointment Time
+                    <div class="card-header bg-info bg-opacity-10 border-0 py-3">
+                        <h5 class="fw-bold mb-0 text-info">
+                            <i class="fas fa-lightbulb me-2"></i>Wellness Tips
                         </h5>
                     </div>
                     <div class="card-body">
-                        <?php if ($success): ?>
-                            <div class="alert alert-success">
-                                <i class="fas fa-check-circle me-2"></i><?= $success ?>
-                                <div class="mt-2">
-                                    <a href="dashboard.php" class="btn btn-sm btn-outline-success">Go to Dashboard</a>
-                                </div>
+                        <div class="small">
+                            <div class="mb-3">
+                                <h6 class="text-primary">🧘‍♀️ Daily Mindfulness</h6>
+                                <p class="text-muted small mb-0">Try 5 minutes of deep breathing each morning</p>
                             </div>
-                        <?php endif; ?>
-
-                        <?php if ($error): ?>
-                            <div class="alert alert-danger">
-                                <i class="fas fa-exclamation-triangle me-2"></i><?= $error ?>
+                            <div class="mb-3">
+                                <h6 class="text-primary">📝 Journal Your Thoughts</h6>
+                                <p class="text-muted small mb-0">Writing helps process emotions and track progress</p>
                             </div>
-                        <?php endif; ?>
-
-                        <?php if (empty($available_slots)): ?>
-                            <div class="text-center py-5">
-                                <i class="fas fa-calendar-times text-muted fs-1 mb-3"></i>
-                                <h5 class="text-muted">No Available Slots</h5>
-                                <p class="text-muted">This counselor has no available appointment slots in the next 2 weeks.</p>
-                                <a href="find_counselor.php" class="btn btn-outline-primary">Find Another Counselor</a>
+                            <div>
+                                <h6 class="text-primary">💬 Stay Connected</h6>
+                                <p class="text-muted small mb-0">Regular check-ins with your counselor work best</p>
                             </div>
-                        <?php else: ?>
-                            <form method="POST" id="bookingForm">
-                                <div class="row g-4">
-                                    <div class="col-12">
-                                        <label class="form-label fw-bold">Available Time Slots</label>
-                                        <div class="row g-3">
-                                            <?php foreach ($slots_by_date as $date => $slots): ?>
-                                                <div class="col-12">
-                                                    <h6 class="text-primary mb-2">
-                                                        <?= date('l, F j, Y', strtotime($date)) ?>
-                                                    </h6>
-                                                    <div class="row g-2">
-                                                        <?php foreach ($slots as $slot): ?>
-                                                            <div class="col-6 col-md-4 col-lg-3">
-                                                                <input type="radio" class="btn-check" name="slot_id" 
-                                                                       value="<?= $slot['id'] ?>" id="slot_<?= $slot['id'] ?>">
-                                                                <label class="btn btn-outline-primary w-100 small" for="slot_<?= $slot['id'] ?>">
-                                                                    <?= date('g:i A', strtotime($slot['start_at'])) ?>
-                                                                </label>
-                                                            </div>
-                                                        <?php endforeach; ?>
-                                                    </div>
-                                                </div>
-                                            <?php endforeach; ?>
-                                        </div>
-                                    </div>
-
-                                    <div class="col-12">
-                                        <label for="message" class="form-label">Message to Counselor (Optional)</label>
-                                        <textarea class="form-control" id="message" name="message" rows="3" 
-                                                  placeholder="Briefly describe what you'd like to discuss..."></textarea>
-                                    </div>
-
-                                    <div class="col-12">
-                                        <button type="submit" class="btn btn-primary btn-lg">
-                                            <i class="fas fa-paper-plane me-2"></i>Request Appointment
-                                        </button>
-                                        <a href="find_counselor.php" class="btn btn-outline-secondary btn-lg ms-2">Cancel</a>
-                                    </div>
-                                </div>
-                            </form>
-                        <?php endif; ?>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -319,16 +387,41 @@ foreach ($available_slots as $slot) {
 
     <?php include '../includes/footer.php'; ?>
     
-    <script>
-        // Form validation
-        document.getElementById('bookingForm')?.addEventListener('submit', function(e) {
-            const selectedSlot = document.querySelector('input[name="slot_id"]:checked');
-            if (!selectedSlot) {
-                e.preventDefault();
-                alert('Please select a time slot for your appointment.');
-                return false;
-            }
-        });
-    </script>
+    <style>
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .hover-lift {
+        transition: transform 0.2s ease-in-out;
+    }
+    
+    .hover-lift:hover {
+        transform: translateY(-5px);
+    }
+    
+    .card {
+        border-radius: 15px;
+    }
+    
+    .btn-lg {
+        border-radius: 10px;
+        padding: 12px 30px;
+    }
+    
+    .list-group-item:last-child {
+        border-bottom: none !important;
+    }
+    
+    .badge {
+        font-size: 0.75em;
+    }
+    
+    .navbar-brand {
+        font-size: 1.5rem;
+    }
+    </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

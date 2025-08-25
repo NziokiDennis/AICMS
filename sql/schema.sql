@@ -148,3 +148,85 @@ INSERT INTO notes (session_id, counselor_id, content, visibility) VALUES
 -- Insert sample feedback
 INSERT INTO feedback (student_id, counselor_id, session_id, rating, comment) VALUES
 (2, 5, 1, 5, 'Dr. Wilson was very understanding and provided excellent coping strategies. Highly recommend!');
+
+-- =========================================================
+-- 0) Choose counselors and the target date window
+-- =========================================================
+SET @from := '2025-08-25 00:00:00';
+SET @to   := '2025-09-07 23:59:59';
+
+-- Your counselor IDs (as per your mapping)
+SET @c_sarah := 5;  -- Dr. Sarah Wilson
+SET @c_chen  := 6;  -- Dr. Robert Chen
+SET @c_maria := 7;  -- Dr. Maria Garcia
+
+-- =========================================================
+-- 1) FREE UP any existing slots in the window by setting OPEN
+--    (if they already exist but are HOLD/BOOKED/BLOCKED etc.)
+-- =========================================================
+UPDATE availability_slots
+SET status = 'OPEN'
+WHERE counselor_id IN (@c_sarah, @c_chen, @c_maria)
+  AND start_at BETWEEN @from AND @to;
+
+-- =========================================================
+-- 2) ADD new OPEN slots for the next 2 weeks (INSERT IGNORE)
+--    If a slot already exists (unique key), it will be ignored.
+--    We'll normalize them to OPEN in step 3.
+-- =========================================================
+INSERT IGNORE INTO availability_slots (counselor_id, start_at, end_at, status) VALUES
+-- ========== Week 1 (Aug 25–31, 2025) ==========
+-- Dr. Sarah (Mon, Wed, Fri)
+(@c_sarah, '2025-08-25 09:00:00', '2025-08-25 10:00:00', 'OPEN'),
+(@c_sarah, '2025-08-25 10:00:00', '2025-08-25 11:00:00', 'OPEN'),
+(@c_sarah, '2025-08-27 14:00:00', '2025-08-27 15:00:00', 'OPEN'),
+(@c_sarah, '2025-08-29 09:00:00', '2025-08-29 10:00:00', 'OPEN'),
+
+-- Dr. Chen (Tue, Thu)
+(@c_chen,  '2025-08-26 10:00:00', '2025-08-26 11:00:00', 'OPEN'),
+(@c_chen,  '2025-08-26 11:00:00', '2025-08-26 12:00:00', 'OPEN'),
+(@c_chen,  '2025-08-28 13:00:00', '2025-08-28 14:00:00', 'OPEN'),
+(@c_chen,  '2025-08-28 15:00:00', '2025-08-28 16:00:00', 'OPEN'),
+
+-- Dr. Maria (Mon, Thu)
+(@c_maria, '2025-08-25 15:00:00', '2025-08-25 16:00:00', 'OPEN'),
+(@c_maria, '2025-08-28 09:00:00', '2025-08-28 10:00:00', 'OPEN'),
+(@c_maria, '2025-08-28 14:00:00', '2025-08-28 15:00:00', 'OPEN'),
+
+-- ========== Week 2 (Sep 1–7, 2025) ==========
+-- Dr. Sarah (Mon, Tue)
+(@c_sarah, '2025-09-01 09:00:00', '2025-09-01 10:00:00', 'OPEN'),
+(@c_sarah, '2025-09-01 10:00:00', '2025-09-01 11:00:00', 'OPEN'),
+(@c_sarah, '2025-09-02 14:00:00', '2025-09-02 15:00:00', 'OPEN'),
+
+-- Dr. Chen (Wed, Fri)
+(@c_chen,  '2025-09-03 10:00:00', '2025-09-03 11:00:00', 'OPEN'),
+(@c_chen,  '2025-09-03 11:00:00', '2025-09-03 12:00:00', 'OPEN'),
+(@c_chen,  '2025-09-05 13:00:00', '2025-09-05 14:00:00', 'OPEN'),
+
+-- Dr. Maria (Tue, Thu)
+(@c_maria, '2025-09-02 10:00:00', '2025-09-02 11:00:00', 'OPEN'),
+(@c_maria, '2025-09-04 16:00:00', '2025-09-04 17:00:00', 'OPEN');
+
+-- =========================================================
+-- 3) Normalize: force all these rows to OPEN within the window
+--    (covers cases where INSERT IGNORE skipped existing rows)
+-- =========================================================
+UPDATE availability_slots
+SET status = 'OPEN'
+WHERE counselor_id IN (@c_sarah, @c_chen, @c_maria)
+  AND start_at BETWEEN @from AND @to;
+  
+  -- Update existing sample appointments to 2025
+UPDATE appointments
+SET start_time = CASE id
+    WHEN 1 THEN '2025-09-02 09:00:00'
+    WHEN 2 THEN '2025-09-02 10:00:00'
+    WHEN 3 THEN '2025-09-02 13:00:00'
+END,
+end_time = CASE id
+    WHEN 1 THEN '2025-09-02 10:00:00'
+    WHEN 2 THEN '2025-09-02 11:00:00'
+    WHEN 3 THEN '2025-09-02 14:00:00'
+END
+WHERE id IN (1, 2, 3);

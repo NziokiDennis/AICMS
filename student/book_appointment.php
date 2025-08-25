@@ -31,8 +31,8 @@ $error = '';
 
 // Handle appointment booking
 if ($_POST) {
-    $slot_id = $_POST['slot_id'];
-    $message = trim($_POST['message']);
+    $slot_id = $_POST['slot_id'] ?? null;
+    $message = trim($_POST['message'] ?? '');
     
     if ($slot_id) {
         // Get slot details
@@ -106,18 +106,17 @@ foreach ($available_slots as $slot) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Book Appointment - Counseling Portal</title>
+    <title>Book Appointment - Happy Hearts Counseling</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="../assets/css/app.css" rel="stylesheet">
 </head>
-<body>
+<body class="bg-light">
     <!-- Student Navigation -->
     <?php
-    // Determine current page for active nav highlighting
     $current_page = basename($_SERVER['PHP_SELF'], '.php');
     ?>
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
         <div class="container">
             <a class="navbar-brand fw-bold text-primary" href="../index.php">
                 <i class="fas fa-brain me-2"></i>Happy Hearts
@@ -149,10 +148,13 @@ foreach ($available_slots as $slot) {
                 <ul class="navbar-nav">
                     <?php if (isset($_SESSION['user_id'])): ?>
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user-circle me-1"></i><?= htmlspecialchars($_SESSION['user_name'] ?? 'Student') ?>
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <?= htmlspecialchars($_SESSION['user_name'] ?? 'Student') ?>
                             </a>
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu dropdown-menu-end">
                                 <li><a class="dropdown-item" href="dashboard.php">
                                     <i class="fas fa-tachometer-alt me-2"></i>Dashboard
                                 </a></li>
@@ -177,7 +179,17 @@ foreach ($available_slots as $slot) {
         </div>
     </nav>
     
-    <div class="container py-4">
+    <!-- Header -->
+    <div class="bg-gradient-primary text-white py-4">
+        <div class="container">
+            <h1 class="display-6 fw-bold mb-2">
+                <i class="fas fa-calendar-plus me-3"></i>Book Appointment
+            </h1>
+            <p class="lead mb-0">Schedule your session with <?= htmlspecialchars($counselor['name']) ?></p>
+        </div>
+    </div>
+    
+    <div class="container py-5">
         <div class="row">
             <div class="col-12">
                 <nav aria-label="breadcrumb">
@@ -190,29 +202,29 @@ foreach ($available_slots as $slot) {
             </div>
         </div>
 
-        <div class="row">
+        <div class="row g-4">
             <!-- Counselor Info -->
             <div class="col-lg-4">
-                <div class="card border-0 shadow-sm">
-                    <div class="card-body text-center">
-                        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
-                            <i class="fas fa-user-md fs-2"></i>
+                <div class="card border-0 shadow-sm sticky-top" style="top: 100px;">
+                    <div class="card-body text-center p-4">
+                        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 100px; height: 100px;">
+                            <i class="fas fa-user-md" style="font-size: 2.5rem;"></i>
                         </div>
-                        <h4><?= htmlspecialchars($counselor['name']) ?></h4>
-                        <p class="text-muted"><?= htmlspecialchars($counselor['specialty'] ?? 'General Counseling') ?></p>
+                        <h4 class="fw-bold"><?= htmlspecialchars($counselor['name']) ?></h4>
+                        <p class="text-muted mb-3"><?= htmlspecialchars($counselor['specialty'] ?? 'General Counseling') ?></p>
                         
                         <?php if ($counselor['bio']): ?>
-                            <div class="text-start mt-3">
-                                <h6>About</h6>
+                            <div class="text-start mb-4">
+                                <h6 class="fw-bold text-primary">About</h6>
                                 <p class="small text-muted"><?= htmlspecialchars($counselor['bio']) ?></p>
                             </div>
                         <?php endif; ?>
                         
-                        <div class="row g-2 mt-3">
+                        <div class="row g-3 text-start">
                             <div class="col-12">
-                                <div class="d-flex justify-content-between">
-                                    <small class="text-muted">Meeting Mode:</small>
-                                    <span class="badge bg-info">
+                                <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded">
+                                    <small class="text-muted fw-bold">Meeting Mode:</small>
+                                    <span class="badge bg-info fs-6">
                                         <?php
                                         $mode_icons = [
                                             'IN_PERSON' => 'fas fa-user-friends',
@@ -227,9 +239,9 @@ foreach ($available_slots as $slot) {
                             </div>
                             <?php if ($counselor['location']): ?>
                                 <div class="col-12">
-                                    <div class="d-flex justify-content-between">
-                                        <small class="text-muted">Location:</small>
-                                        <small><?= htmlspecialchars($counselor['location']) ?></small>
+                                    <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded">
+                                        <small class="text-muted fw-bold">Location:</small>
+                                        <small class="text-end"><?= htmlspecialchars($counselor['location']) ?></small>
                                     </div>
                                 </div>
                             <?php endif; ?>
@@ -241,55 +253,84 @@ foreach ($available_slots as $slot) {
             <!-- Booking Form -->
             <div class="col-lg-8">
                 <div class="card border-0 shadow-sm">
-                    <div class="card-header bg-white border-0 py-3">
-                        <h5 class="mb-0 fw-bold">
-                            <i class="fas fa-calendar-plus text-primary me-2"></i>Select Appointment Time
-                        </h5>
+                    <div class="card-header bg-white border-0 py-4">
+                        <h4 class="mb-0 fw-bold">
+                            <i class="fas fa-clock text-primary me-2"></i>Select Appointment Time
+                        </h4>
+                        <p class="text-muted mb-0 mt-2">Choose from available time slots in the next 2 weeks</p>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body p-4">
                         <?php if ($success): ?>
-                            <div class="alert alert-success">
-                                <i class="fas fa-check-circle me-2"></i><?= $success ?>
-                                <div class="mt-2">
-                                    <a href="dashboard.php" class="btn btn-sm btn-outline-success">Go to Dashboard</a>
+                            <div class="alert alert-success border-0 shadow-sm">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-check-circle fs-2 me-3"></i>
+                                    <div>
+                                        <h5 class="mb-1">Booking Successful!</h5>
+                                        <p class="mb-3"><?= $success ?></p>
+                                        <div class="d-flex gap-2">
+                                            <a href="dashboard.php" class="btn btn-success">
+                                                <i class="fas fa-tachometer-alt me-1"></i>Go to Dashboard
+                                            </a>
+                                            <a href="find_counselor.php" class="btn btn-outline-success">
+                                                <i class="fas fa-search me-1"></i>Find Another Counselor
+                                            </a>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         <?php endif; ?>
 
                         <?php if ($error): ?>
-                            <div class="alert alert-danger">
+                            <div class="alert alert-danger border-0 shadow-sm">
                                 <i class="fas fa-exclamation-triangle me-2"></i><?= $error ?>
                             </div>
                         <?php endif; ?>
 
                         <?php if (empty($available_slots)): ?>
                             <div class="text-center py-5">
-                                <i class="fas fa-calendar-times text-muted fs-1 mb-3"></i>
-                                <h5 class="text-muted">No Available Slots</h5>
-                                <p class="text-muted">This counselor has no available appointment slots in the next 2 weeks.</p>
-                                <a href="find_counselor.php" class="btn btn-outline-primary">Find Another Counselor</a>
+                                <div class="mb-4">
+                                    <i class="fas fa-calendar-times text-muted" style="font-size: 4rem;"></i>
+                                </div>
+                                <h4 class="text-muted fw-bold mb-3">No Available Slots</h4>
+                                <p class="text-muted mb-4">This counselor has no available appointment slots in the next 2 weeks. Please check back later or try another counselor.</p>
+                                <div class="d-flex justify-content-center gap-3">
+                                    <a href="find_counselor.php" class="btn btn-primary btn-lg">
+                                        <i class="fas fa-search me-2"></i>Find Another Counselor
+                                    </a>
+                                    <a href="dashboard.php" class="btn btn-outline-primary btn-lg">
+                                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                                    </a>
+                                </div>
                             </div>
                         <?php else: ?>
                             <form method="POST" id="bookingForm">
                                 <div class="row g-4">
                                     <div class="col-12">
-                                        <label class="form-label fw-bold">Available Time Slots</label>
-                                        <div class="row g-3">
+                                        <label class="form-label fw-bold fs-5 mb-3">Available Time Slots</label>
+                                        <div class="row g-4">
                                             <?php foreach ($slots_by_date as $date => $slots): ?>
                                                 <div class="col-12">
-                                                    <h6 class="text-primary mb-2">
-                                                        <?= date('l, F j, Y', strtotime($date)) ?>
-                                                    </h6>
-                                                    <div class="row g-2">
-                                                        <?php foreach ($slots as $slot): ?>
-                                                            <div class="col-6 col-md-4 col-lg-3">
-                                                                <input type="radio" class="btn-check" name="slot_id" 
-                                                                       value="<?= $slot['id'] ?>" id="slot_<?= $slot['id'] ?>">
-                                                                <label class="btn btn-outline-primary w-100 small" for="slot_<?= $slot['id'] ?>">
-                                                                    <?= date('g:i A', strtotime($slot['start_at'])) ?>
-                                                                </label>
+                                                    <div class="card border-0 bg-light">
+                                                        <div class="card-header bg-primary text-white">
+                                                            <h6 class="mb-0 fw-bold">
+                                                                <i class="fas fa-calendar-day me-2"></i>
+                                                                <?= date('l, F j, Y', strtotime($date)) ?>
+                                                            </h6>
+                                                        </div>
+                                                        <div class="card-body p-3">
+                                                            <div class="row g-2">
+                                                                <?php foreach ($slots as $slot): ?>
+                                                                    <div class="col-6 col-md-4 col-lg-3">
+                                                                        <input type="radio" class="btn-check" name="slot_id" 
+                                                                               value="<?= $slot['id'] ?>" id="slot_<?= $slot['id'] ?>">
+                                                                        <label class="btn btn-outline-primary w-100 p-3 time-slot" for="slot_<?= $slot['id'] ?>">
+                                                                            <i class="fas fa-clock me-1"></i>
+                                                                            <?= date('g:i A', strtotime($slot['start_at'])) ?>
+                                                                        </label>
+                                                                    </div>
+                                                                <?php endforeach; ?>
                                                             </div>
-                                                        <?php endforeach; ?>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             <?php endforeach; ?>
@@ -297,16 +338,21 @@ foreach ($available_slots as $slot) {
                                     </div>
 
                                     <div class="col-12">
-                                        <label for="message" class="form-label">Message to Counselor (Optional)</label>
-                                        <textarea class="form-control" id="message" name="message" rows="3" 
-                                                  placeholder="Briefly describe what you'd like to discuss..."></textarea>
+                                        <label for="message" class="form-label fw-bold">Message to Counselor (Optional)</label>
+                                        <textarea class="form-control form-control-lg" id="message" name="message" rows="4" 
+                                                  placeholder="Briefly describe what you'd like to discuss in this session..."></textarea>
+                                        <small class="text-muted">This helps your counselor prepare for your session</small>
                                     </div>
 
-                                    <div class="col-12">
-                                        <button type="submit" class="btn btn-primary btn-lg">
-                                            <i class="fas fa-paper-plane me-2"></i>Request Appointment
-                                        </button>
-                                        <a href="find_counselor.php" class="btn btn-outline-secondary btn-lg ms-2">Cancel</a>
+                                    <div class="col-12 text-center">
+                                        <div class="d-flex justify-content-center gap-3 flex-wrap">
+                                            <button type="submit" class="btn btn-primary btn-lg px-5">
+                                                <i class="fas fa-paper-plane me-2"></i>Request Appointment
+                                            </button>
+                                            <a href="find_counselor.php" class="btn btn-outline-secondary btn-lg px-4">
+                                                <i class="fas fa-arrow-left me-2"></i>Back to Search
+                                            </a>
+                                        </div>
                                     </div>
                                 </div>
                             </form>
@@ -319,15 +365,87 @@ foreach ($available_slots as $slot) {
 
     <?php include '../includes/footer.php'; ?>
     
+    <style>
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .time-slot {
+        transition: all 0.2s ease;
+        border-radius: 10px !important;
+        font-weight: 600;
+    }
+    
+    .time-slot:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    
+    .btn-check:checked + .time-slot {
+        background-color: #667eea !important;
+        border-color: #667eea !important;
+        color: white !important;
+        transform: scale(1.05);
+    }
+    
+    .card {
+        border-radius: 15px;
+    }
+    
+    .btn-lg {
+        border-radius: 10px;
+        padding: 12px 30px;
+    }
+    
+    .alert {
+        border-radius: 12px;
+    }
+    
+    .form-control-lg {
+        border-radius: 10px;
+    }
+    </style>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Form validation
         document.getElementById('bookingForm')?.addEventListener('submit', function(e) {
             const selectedSlot = document.querySelector('input[name="slot_id"]:checked');
             if (!selectedSlot) {
                 e.preventDefault();
-                alert('Please select a time slot for your appointment.');
+                
+                // Show nice alert
+                const alertHtml = `
+                    <div class="alert alert-warning border-0 shadow-sm alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Please select a time slot</strong> before submitting your appointment request.
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                `;
+                
+                const form = document.getElementById('bookingForm');
+                form.insertAdjacentHTML('afterbegin', alertHtml);
+                
+                // Scroll to top of form
+                form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                
                 return false;
             }
+        });
+
+        // Add visual feedback for time slot selection
+        document.querySelectorAll('input[name="slot_id"]').forEach(input => {
+            input.addEventListener('change', function() {
+                // Remove previous selection styling
+                document.querySelectorAll('.time-slot').forEach(label => {
+                    label.classList.remove('selected-slot');
+                });
+                
+                // Add styling to selected slot
+                if (this.checked) {
+                    document.querySelector(`label[for="${this.id}"]`).classList.add('selected-slot');
+                }
+            });
         });
     </script>
 </body>
