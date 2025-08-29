@@ -1,4 +1,4 @@
--- MySQL dump 10.13  Distrib 8.0.38, for Win64 (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.39, for Win64 (x86_64)
 --
 -- Host: localhost    Database: counseling_system
 -- ------------------------------------------------------
@@ -7,7 +7,7 @@
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
 /*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!50503 SET NAMES utf8 */;
+/*!50503 SET NAMES utf8mb4 */;
 /*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
 /*!40103 SET TIME_ZONE='+00:00' */;
 /*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
@@ -37,7 +37,7 @@ CREATE TABLE `appointments` (
   KEY `student_id` (`student_id`,`start_time`),
   CONSTRAINT `appointments_ibfk_1` FOREIGN KEY (`student_id`) REFERENCES `users` (`id`),
   CONSTRAINT `appointments_ibfk_2` FOREIGN KEY (`counselor_id`) REFERENCES `users` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -46,9 +46,26 @@ CREATE TABLE `appointments` (
 
 LOCK TABLES `appointments` WRITE;
 /*!40000 ALTER TABLE `appointments` DISABLE KEYS */;
-INSERT INTO `appointments` VALUES (1,2,5,'2025-09-02 09:00:00','2025-09-02 10:00:00','APPROVED','Experiencing anxiety about upcoming exams','2025-08-24 22:42:04','2025-08-25 12:53:57'),(2,3,6,'2025-09-02 10:00:00','2025-09-02 11:00:00','CANCELLED','Need help with time management and study strategies','2025-08-24 22:42:04',NULL),(3,4,7,'2025-09-02 13:00:00','2025-09-02 14:00:00','APPROVED','Having relationship issues with roommates','2025-08-24 22:42:04','2025-08-25 12:53:57'),(4,2,6,'2025-09-05 12:00:00','2025-09-05 13:00:00','APPROVED','','2025-08-25 00:47:36','2025-08-25 12:53:57'),(5,2,7,'2025-08-25 15:00:00','2025-08-25 16:00:00','APPROVED','','2025-08-25 01:24:28','2025-08-25 12:53:57'),(6,4,5,'2025-08-25 06:00:00','2025-08-25 07:00:00','COMPLETED','','2025-08-25 02:48:41',NULL),(7,8,7,'2025-08-28 09:00:00','2025-08-28 10:00:00','APPROVED','','2025-08-25 03:31:13','2025-08-25 13:39:01'),(8,8,5,'2025-08-25 09:00:00','2025-08-25 10:00:00','COMPLETED','','2025-08-25 03:31:46',NULL),(9,8,7,'2025-09-02 10:00:00','2025-09-02 11:00:00','APPROVED','','2025-08-25 08:57:32','2025-08-25 13:39:03');
+INSERT INTO `appointments` VALUES (1,2,5,'2025-09-02 09:00:00','2025-09-02 10:00:00','APPROVED','Experiencing anxiety about upcoming exams','2025-08-24 22:42:04','2025-08-25 12:53:57'),(2,3,6,'2025-09-02 10:00:00','2025-09-02 11:00:00','CANCELLED','Need help with time management and study strategies','2025-08-24 22:42:04',NULL),(3,4,7,'2025-09-02 13:00:00','2025-09-02 14:00:00','APPROVED','Having relationship issues with roommates','2025-08-24 22:42:04','2025-08-25 12:53:57'),(4,2,6,'2025-09-05 12:00:00','2025-09-05 13:00:00','APPROVED','','2025-08-25 00:47:36','2025-08-25 12:53:57'),(5,2,7,'2025-08-25 15:00:00','2025-08-25 16:00:00','APPROVED','','2025-08-25 01:24:28','2025-08-25 12:53:57'),(6,4,5,'2025-08-25 06:00:00','2025-08-25 07:00:00','COMPLETED','','2025-08-25 02:48:41',NULL),(7,8,7,'2025-08-28 09:00:00','2025-08-28 10:00:00','APPROVED','','2025-08-25 03:31:13','2025-08-25 13:39:01'),(8,8,5,'2025-08-25 09:00:00','2025-08-25 10:00:00','COMPLETED','','2025-08-25 03:31:46',NULL),(9,8,7,'2025-09-02 10:00:00','2025-09-02 11:00:00','APPROVED','','2025-08-25 08:57:32','2025-08-25 13:39:03'),(10,8,13,'2025-09-02 13:00:00','2025-09-02 14:00:00','APPROVED','','2025-08-29 03:58:15','2025-08-29 03:58:42'),(11,8,11,'2025-09-04 14:00:00','2025-09-04 15:00:00','PENDING','','2025-08-29 03:58:25',NULL),(12,8,5,'2025-08-29 09:00:00','2025-08-29 10:00:00','APPROVED','','2025-08-29 04:00:58','2025-08-29 04:01:13');
 /*!40000 ALTER TABLE `appointments` ENABLE KEYS */;
 UNLOCK TABLES;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_0900_ai_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`root`@`localhost`*/ /*!50003 TRIGGER `update_appointments_updated_at` BEFORE UPDATE ON `appointments` FOR EACH ROW BEGIN
+    SET NEW.updated_at = CURRENT_TIMESTAMP;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `availability_slots`
@@ -67,7 +84,7 @@ CREATE TABLE `availability_slots` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `counselor_id` (`counselor_id`,`start_at`,`end_at`),
   CONSTRAINT `availability_slots_ibfk_1` FOREIGN KEY (`counselor_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=36 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=47 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -76,7 +93,7 @@ CREATE TABLE `availability_slots` (
 
 LOCK TABLES `availability_slots` WRITE;
 /*!40000 ALTER TABLE `availability_slots` DISABLE KEYS */;
-INSERT INTO `availability_slots` VALUES (1,5,'2024-09-02 09:00:00','2024-09-02 10:00:00','OPEN','2025-08-24 22:41:57'),(2,5,'2024-09-02 10:00:00','2024-09-02 11:00:00','OPEN','2025-08-24 22:41:57'),(3,5,'2024-09-02 14:00:00','2024-09-02 15:00:00','OPEN','2025-08-24 22:41:57'),(4,5,'2024-09-03 09:00:00','2024-09-03 10:00:00','OPEN','2025-08-24 22:41:57'),(5,5,'2024-09-03 11:00:00','2024-09-03 12:00:00','OPEN','2025-08-24 22:41:57'),(6,6,'2024-09-02 10:00:00','2024-09-02 11:00:00','OPEN','2025-08-24 22:41:57'),(7,6,'2024-09-02 11:00:00','2024-09-02 12:00:00','OPEN','2025-08-24 22:41:57'),(8,6,'2024-09-02 13:00:00','2024-09-02 14:00:00','OPEN','2025-08-24 22:41:57'),(9,6,'2024-09-04 09:00:00','2024-09-04 10:00:00','OPEN','2025-08-24 22:41:57'),(10,6,'2024-09-04 15:00:00','2024-09-04 16:00:00','OPEN','2025-08-24 22:41:57'),(11,7,'2024-09-02 13:00:00','2024-09-02 14:00:00','OPEN','2025-08-24 22:41:57'),(12,7,'2024-09-02 15:00:00','2024-09-02 16:00:00','OPEN','2025-08-24 22:41:57'),(13,7,'2024-09-03 10:00:00','2024-09-03 11:00:00','OPEN','2025-08-24 22:41:57'),(14,7,'2024-09-05 14:00:00','2024-09-05 15:00:00','OPEN','2025-08-24 22:41:57'),(15,7,'2024-09-05 16:00:00','2024-09-05 17:00:00','OPEN','2025-08-24 22:41:57'),(16,5,'2025-08-25 09:00:00','2025-08-25 10:00:00','OPEN','2025-08-25 00:44:05'),(17,5,'2025-08-25 10:00:00','2025-08-25 11:00:00','OPEN','2025-08-25 00:44:05'),(18,5,'2025-08-27 14:00:00','2025-08-27 15:00:00','OPEN','2025-08-25 00:44:05'),(19,5,'2025-08-29 09:00:00','2025-08-29 10:00:00','OPEN','2025-08-25 00:44:05'),(20,6,'2025-08-26 10:00:00','2025-08-26 11:00:00','OPEN','2025-08-25 00:44:05'),(21,6,'2025-08-26 11:00:00','2025-08-26 12:00:00','OPEN','2025-08-25 00:44:05'),(22,6,'2025-08-28 13:00:00','2025-08-28 14:00:00','OPEN','2025-08-25 00:44:05'),(23,6,'2025-08-28 15:00:00','2025-08-28 16:00:00','OPEN','2025-08-25 00:44:05'),(24,7,'2025-08-25 15:00:00','2025-08-25 16:00:00','OPEN','2025-08-25 00:44:05'),(25,7,'2025-08-28 09:00:00','2025-08-28 10:00:00','OPEN','2025-08-25 00:44:05'),(26,7,'2025-08-28 14:00:00','2025-08-28 15:00:00','OPEN','2025-08-25 00:44:05'),(27,5,'2025-09-01 09:00:00','2025-09-01 10:00:00','OPEN','2025-08-25 00:44:05'),(28,5,'2025-09-01 10:00:00','2025-09-01 11:00:00','OPEN','2025-08-25 00:44:05'),(29,5,'2025-09-02 14:00:00','2025-09-02 15:00:00','OPEN','2025-08-25 00:44:05'),(30,6,'2025-09-03 10:00:00','2025-09-03 11:00:00','OPEN','2025-08-25 00:44:05'),(31,6,'2025-09-03 11:00:00','2025-09-03 12:00:00','OPEN','2025-08-25 00:44:05'),(32,6,'2025-09-05 13:00:00','2025-09-05 14:00:00','OPEN','2025-08-25 00:44:05'),(33,7,'2025-09-02 10:00:00','2025-09-02 11:00:00','OPEN','2025-08-25 00:44:05'),(34,7,'2025-09-04 16:00:00','2025-09-04 17:00:00','OPEN','2025-08-25 00:44:05'),(35,5,'2025-08-25 06:00:00','2025-08-25 07:00:00','OPEN','2025-08-25 02:47:41');
+INSERT INTO `availability_slots` VALUES (1,5,'2024-09-02 09:00:00','2024-09-02 10:00:00','OPEN','2025-08-24 22:41:57'),(2,5,'2024-09-02 10:00:00','2024-09-02 11:00:00','OPEN','2025-08-24 22:41:57'),(3,5,'2024-09-02 14:00:00','2024-09-02 15:00:00','OPEN','2025-08-24 22:41:57'),(4,5,'2024-09-03 09:00:00','2024-09-03 10:00:00','OPEN','2025-08-24 22:41:57'),(5,5,'2024-09-03 11:00:00','2024-09-03 12:00:00','OPEN','2025-08-24 22:41:57'),(6,6,'2024-09-02 10:00:00','2024-09-02 11:00:00','OPEN','2025-08-24 22:41:57'),(7,6,'2024-09-02 11:00:00','2024-09-02 12:00:00','OPEN','2025-08-24 22:41:57'),(8,6,'2024-09-02 13:00:00','2024-09-02 14:00:00','OPEN','2025-08-24 22:41:57'),(9,6,'2024-09-04 09:00:00','2024-09-04 10:00:00','OPEN','2025-08-24 22:41:57'),(10,6,'2024-09-04 15:00:00','2024-09-04 16:00:00','OPEN','2025-08-24 22:41:57'),(11,7,'2024-09-02 13:00:00','2024-09-02 14:00:00','OPEN','2025-08-24 22:41:57'),(12,7,'2024-09-02 15:00:00','2024-09-02 16:00:00','OPEN','2025-08-24 22:41:57'),(13,7,'2024-09-03 10:00:00','2024-09-03 11:00:00','OPEN','2025-08-24 22:41:57'),(14,7,'2024-09-05 14:00:00','2024-09-05 15:00:00','OPEN','2025-08-24 22:41:57'),(15,7,'2024-09-05 16:00:00','2024-09-05 17:00:00','OPEN','2025-08-24 22:41:57'),(16,5,'2025-08-25 09:00:00','2025-08-25 10:00:00','OPEN','2025-08-25 00:44:05'),(17,5,'2025-08-25 10:00:00','2025-08-25 11:00:00','OPEN','2025-08-25 00:44:05'),(18,5,'2025-08-27 14:00:00','2025-08-27 15:00:00','OPEN','2025-08-25 00:44:05'),(19,5,'2025-08-29 09:00:00','2025-08-29 10:00:00','OPEN','2025-08-25 00:44:05'),(20,6,'2025-08-26 10:00:00','2025-08-26 11:00:00','OPEN','2025-08-25 00:44:05'),(21,6,'2025-08-26 11:00:00','2025-08-26 12:00:00','OPEN','2025-08-25 00:44:05'),(22,6,'2025-08-28 13:00:00','2025-08-28 14:00:00','OPEN','2025-08-25 00:44:05'),(23,6,'2025-08-28 15:00:00','2025-08-28 16:00:00','OPEN','2025-08-25 00:44:05'),(24,7,'2025-08-25 15:00:00','2025-08-25 16:00:00','OPEN','2025-08-25 00:44:05'),(25,7,'2025-08-28 09:00:00','2025-08-28 10:00:00','OPEN','2025-08-25 00:44:05'),(26,7,'2025-08-28 14:00:00','2025-08-28 15:00:00','OPEN','2025-08-25 00:44:05'),(27,5,'2025-09-01 09:00:00','2025-09-01 10:00:00','OPEN','2025-08-25 00:44:05'),(28,5,'2025-09-01 10:00:00','2025-09-01 11:00:00','OPEN','2025-08-25 00:44:05'),(29,5,'2025-09-02 14:00:00','2025-09-02 15:00:00','OPEN','2025-08-25 00:44:05'),(30,6,'2025-09-03 10:00:00','2025-09-03 11:00:00','OPEN','2025-08-25 00:44:05'),(31,6,'2025-09-03 11:00:00','2025-09-03 12:00:00','OPEN','2025-08-25 00:44:05'),(32,6,'2025-09-05 13:00:00','2025-09-05 14:00:00','OPEN','2025-08-25 00:44:05'),(33,7,'2025-09-02 10:00:00','2025-09-02 11:00:00','OPEN','2025-08-25 00:44:05'),(34,7,'2025-09-04 16:00:00','2025-09-04 17:00:00','OPEN','2025-08-25 00:44:05'),(35,5,'2025-08-25 06:00:00','2025-08-25 07:00:00','OPEN','2025-08-25 02:47:41'),(36,11,'2025-08-29 11:00:00','2025-08-29 12:00:00','OPEN','2025-08-29 03:57:59'),(37,11,'2025-09-01 15:00:00','2025-09-01 16:00:00','OPEN','2025-08-29 03:57:59'),(38,11,'2025-09-03 09:00:00','2025-09-03 10:00:00','OPEN','2025-08-29 03:57:59'),(39,11,'2025-09-04 14:00:00','2025-09-04 15:00:00','OPEN','2025-08-29 03:57:59'),(40,13,'2025-08-30 10:00:00','2025-08-30 11:00:00','OPEN','2025-08-29 03:58:02'),(41,13,'2025-09-02 13:00:00','2025-09-02 14:00:00','OPEN','2025-08-29 03:58:02'),(42,13,'2025-09-03 15:00:00','2025-09-03 16:00:00','OPEN','2025-08-29 03:58:02'),(43,13,'2025-09-05 09:00:00','2025-09-05 10:00:00','OPEN','2025-08-29 03:58:02'),(45,7,'2025-08-29 14:00:00','2025-08-29 15:00:00','OPEN','2025-08-29 04:02:16'),(46,13,'2025-08-29 16:00:00','2025-08-29 17:00:00','OPEN','2025-08-29 04:02:21');
 /*!40000 ALTER TABLE `availability_slots` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -104,7 +121,7 @@ CREATE TABLE `counselor_profiles` (
 
 LOCK TABLES `counselor_profiles` WRITE;
 /*!40000 ALTER TABLE `counselor_profiles` DISABLE KEYS */;
-INSERT INTO `counselor_profiles` VALUES (5,'Anxiety & Depression','VIDEO','Licensed clinical psychologist specializing in anxiety disorders and depression treatment for university students.','Psychology Building, Room 201'),(6,'Academic Stress','IN_PERSON','Educational counselor with 10+ years experience helping students manage academic pressure and study habits.','Student Services Center, Room 105'),(7,'Relationships & Social Issues','PHONE','Marriage and family therapist focusing on relationship counseling and social anxiety in young adults.','Counseling Center, Room 302'),(11,'Psychodynamic','IN_PERSON','Trained and taught psychodynamics for 10 years','Nairobi');
+INSERT INTO `counselor_profiles` VALUES (5,'Anxiety & Depression','VIDEO','Licensed clinical psychologist specializing in anxiety disorders and depression treatment for university students.','Psychology Building, Room 201'),(6,'Academic Stress','IN_PERSON','Educational counselor with 10+ years experience helping students manage academic pressure and study habits.','Student Services Center, Room 105'),(7,'Relationships & Social Issues','PHONE','Marriage and family therapist focusing on relationship counseling and social anxiety in young adults.','Counseling Center, Room 302'),(11,'Psychodynamic','IN_PERSON','Trained and taught psychodynamics for 10 years','Nairobi'),(13,'Cognitive Behavioral Therapy','PHONE','Licensed Clinical Social Worker with over a decade of experience helping adults navigate challenges with anxiety, depression, and life transitions.','Counseling Center, Room 300');
 /*!40000 ALTER TABLE `counselor_profiles` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -192,7 +209,7 @@ CREATE TABLE `sessions` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `appointment_id` (`appointment_id`),
   CONSTRAINT `sessions_ibfk_1` FOREIGN KEY (`appointment_id`) REFERENCES `appointments` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -201,7 +218,7 @@ CREATE TABLE `sessions` (
 
 LOCK TABLES `sessions` WRITE;
 /*!40000 ALTER TABLE `sessions` DISABLE KEYS */;
-INSERT INTO `sessions` VALUES (1,1,'SCHEDULED',NULL,NULL),(2,3,'SCHEDULED',NULL,NULL),(3,5,'SCHEDULED',NULL,NULL),(4,4,'SCHEDULED',NULL,NULL),(5,6,'COMPLETED','2025-08-25 06:25:29','2025-08-25 06:25:37'),(6,8,'COMPLETED','2025-08-25 06:32:28','2025-08-25 06:32:36'),(7,7,'SCHEDULED',NULL,NULL),(8,9,'SCHEDULED',NULL,NULL);
+INSERT INTO `sessions` VALUES (1,1,'SCHEDULED',NULL,NULL),(2,3,'SCHEDULED',NULL,NULL),(3,5,'SCHEDULED',NULL,NULL),(4,4,'SCHEDULED',NULL,NULL),(5,6,'COMPLETED','2025-08-25 06:25:29','2025-08-25 06:25:37'),(6,8,'COMPLETED','2025-08-25 06:32:28','2025-08-25 06:32:36'),(7,7,'SCHEDULED',NULL,NULL),(8,9,'SCHEDULED',NULL,NULL),(9,10,'SCHEDULED',NULL,NULL),(10,12,'SCHEDULED',NULL,NULL);
 /*!40000 ALTER TABLE `sessions` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -222,7 +239,7 @@ CREATE TABLE `users` (
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
   UNIQUE KEY `email` (`email`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -231,7 +248,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'ADMIN','System Administrator','admin@counseling.edu','$2y$10$36qEP4s6JtFYbXCsN/H6Iua4Xb8e.rmdXTw45msKVaBm4FicQOfO.','+1-555-0001','2025-08-24 22:40:59'),(2,'STUDENT','John Smith','john.smith@student.edu','$2y$10$36qEP4s6JtFYbXCsN/H6Iua4Xb8e.rmdXTw45msKVaBm4FicQOfO.','+1-555-1001','2025-08-24 22:40:59'),(3,'STUDENT','Emiy Johnson','emiy.johnson@student.edu','$2y$10$36qEP4s6JtFYbXCsN/H6Iua4Xb8e.rmdXTw45msKVaBm4FicQOfO.','+1-555-1002','2025-08-24 22:40:59'),(4,'STUDENT','Michael Davis','michael.davis@student.edu','$2y$10$36qEP4s6JtFYbXCsN/H6Iua4Xb8e.rmdXTw45msKVaBm4FicQOfO.','+1-555-1003','2025-08-24 22:40:59'),(5,'COUNSELOR','Dr. Sarah Wilson','dr.wilson@counseling.edu','$2y$10$36qEP4s6JtFYbXCsN/H6Iua4Xb8e.rmdXTw45msKVaBm4FicQOfO.','+1-555-2001','2025-08-24 22:40:59'),(6,'COUNSELOR','Dr. Robert Chen','dr.chen@counseling.edu','$2y$10$36qEP4s6JtFYbXCsN/H6Iua4Xb8e.rmdXTw45msKVaBm4FicQOfO.','+1-555-2002','2025-08-24 22:40:59'),(7,'COUNSELOR','Dr. Maria Garcia','dr.garcia@counseling.edu','$2y$10$36qEP4s6JtFYbXCsN/H6Iua4Xb8e.rmdXTw45msKVaBm4FicQOfO.','+1-555-2003','2025-08-24 22:40:59'),(8,'STUDENT','Dominic Orenge','dominic.orenge@student.edu','$2y$10$36qEP4s6JtFYbXCsN/H6Iua4Xb8e.rmdXTw45msKVaBm4FicQOfO.','+1-555-2004','2025-08-24 22:48:00'),(9,'STUDENT','Nzioki Dennis','nzioki.dennis@student.edu','$2y$10$0mlUYri3C2gXk5oDVt/5UuUys76.cAy18DccE9JHSa2pQNmk0B3UO','+1-555-2005','2025-08-25 09:15:03'),(10,'STUDENT','Mutua Jirani','mutua.jirani@student.edu','$2y$10$aw0aLjVln9tfmEIRpx04beKkv4ZbXc4KPzV87H.t/9nDQMB67gjAS','+1-555-2007','2025-08-25 11:12:29'),(11,'COUNSELOR','Dr. John Doe','dr.john@counseling.edu','$2y$10$fSYXUkd6ZUYAynOdbT6s6eCT3XAZq9u8YRjkK16O0SQNEUoPn9kma','+1-555-2008','2025-08-25 11:15:16');
+INSERT INTO `users` VALUES (1,'ADMIN','System Administrator','admin@counseling.edu','$2y$10$36qEP4s6JtFYbXCsN/H6Iua4Xb8e.rmdXTw45msKVaBm4FicQOfO.','+1-555-0001','2025-08-24 22:40:59'),(2,'STUDENT','John Smith','john.smith@student.edu','$2y$10$36qEP4s6JtFYbXCsN/H6Iua4Xb8e.rmdXTw45msKVaBm4FicQOfO.','+1-555-1001','2025-08-24 22:40:59'),(3,'STUDENT','Emiy Johnson','emiy.johnson@student.edu','$2y$10$36qEP4s6JtFYbXCsN/H6Iua4Xb8e.rmdXTw45msKVaBm4FicQOfO.','+1-555-1002','2025-08-24 22:40:59'),(4,'STUDENT','Michael Davis','michael.davis@student.edu','$2y$10$36qEP4s6JtFYbXCsN/H6Iua4Xb8e.rmdXTw45msKVaBm4FicQOfO.','+1-555-1003','2025-08-24 22:40:59'),(5,'COUNSELOR','Dr. Sarah Wilson','dr.wilson@counseling.edu','$2y$10$36qEP4s6JtFYbXCsN/H6Iua4Xb8e.rmdXTw45msKVaBm4FicQOfO.','+1-555-2001','2025-08-24 22:40:59'),(6,'COUNSELOR','Dr. Robert Chen','dr.chen@counseling.edu','$2y$10$36qEP4s6JtFYbXCsN/H6Iua4Xb8e.rmdXTw45msKVaBm4FicQOfO.','+1-555-2002','2025-08-24 22:40:59'),(7,'COUNSELOR','Dr. Maria Garcia','dr.garcia@counseling.edu','$2y$10$36qEP4s6JtFYbXCsN/H6Iua4Xb8e.rmdXTw45msKVaBm4FicQOfO.','+1-555-2003','2025-08-24 22:40:59'),(8,'STUDENT','Dominic Orenge','dominic.orenge@student.edu','$2y$10$36qEP4s6JtFYbXCsN/H6Iua4Xb8e.rmdXTw45msKVaBm4FicQOfO.','+1-555-2004','2025-08-24 22:48:00'),(11,'COUNSELOR','Dr. John Doe','dr.john@counseling.edu','$2y$10$fSYXUkd6ZUYAynOdbT6s6eCT3XAZq9u8YRjkK16O0SQNEUoPn9kma','+1-555-2008','2025-08-25 11:15:16'),(12,'STUDENT','Nzioki Dennis','nzioki.dennis@student.edu','$2y$10$j910eFrj1xZF/gMcJKfjAu/CsJWzitOwSVb8iGyObCrFhfU/FQiE2','+254712345111','2025-08-29 03:40:47'),(13,'COUNSELOR','Dr. Issak Issak','dr.issak@counseling.edu','$2y$10$Ea5KygPlJa9fT5ScYoP/cuBPR0EkCORq6t651YfBn2rQ4Qv9sE76i','+1 (612) 855-5773','2025-08-29 03:48:48'),(14,'ADMIN','Sys Admin','sysadmin@counseling.edu','$2y$10$cObD.DWQOKYcI7iaBY9H6OlobMlVerOhMovvd6qPgzQQ6t1OhrgCm','+254777724095','2025-08-29 03:50:00');
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -244,4 +261,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-08-25 18:39:47
+-- Dump completed on 2025-08-29 10:07:11
