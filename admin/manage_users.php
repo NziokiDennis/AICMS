@@ -17,60 +17,6 @@ if ($_POST) {
     
     try {
         switch ($action) {
-            case 'create_user':
-                $role = $_POST['role'];
-                $name = trim($_POST['name']);
-                $email = trim($_POST['email']);
-                $phone = trim($_POST['phone']);
-                $password = $_POST['password'];
-                
-                // Validate inputs
-                if (!$name || !$email || !$password || !$role) {
-                    throw new Exception('All required fields must be filled');
-                }
-                
-                if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-                    throw new Exception('Invalid email format');
-                }
-                
-                // Check if email exists
-                $stmt = $pdo->prepare("SELECT id FROM users WHERE email = ?");
-                $stmt->execute([$email]);
-                if ($stmt->fetch()) {
-                    throw new Exception('Email already exists');
-                }
-                
-                $password_hash = password_hash($password, PASSWORD_DEFAULT);
-                
-                $pdo->beginTransaction();
-                
-                // Create user
-                $stmt = $pdo->prepare("
-                    INSERT INTO users (role, name, email, password_hash, phone) 
-                    VALUES (?, ?, ?, ?, ?)
-                ");
-                $stmt->execute([$role, $name, $email, $password_hash, $phone]);
-                $user_id = $pdo->lastInsertId();
-                
-                // Create counselor profile if role is COUNSELOR
-                if ($role === 'COUNSELOR') {
-                    $specialty = $_POST['specialty'] ?? '';
-                    $meeting_mode = $_POST['meeting_mode'] ?? 'IN_PERSON';
-                    $bio = $_POST['bio'] ?? '';
-                    $location = $_POST['location'] ?? '';
-                    
-                    $stmt = $pdo->prepare("
-                        INSERT INTO counselor_profiles (user_id, specialty, meeting_mode, bio, location)
-                        VALUES (?, ?, ?, ?, ?)
-                    ");
-                    $stmt->execute([$user_id, $specialty, $meeting_mode, $bio, $location]);
-                }
-                
-                $pdo->commit();
-                $message = ucfirst(strtolower($role)) . " created successfully";
-                $message_type = 'success';
-                break;
-                
             case 'update_user':
                 $user_id = $_POST['user_id'];
                 $name = trim($_POST['name']);
@@ -257,19 +203,9 @@ while ($row = $stmt->fetch()) {
                         </h1>
                         <p class="text-muted mb-0">Create, edit, and manage system users</p>
                     </div>
-                    <div class="dropdown">
-                        <button class="btn btn-success dropdown-toggle" type="button" id="addUserDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                            <i class="fas fa-plus me-2"></i>Add User
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="addUserDropdown">
-                            <li><a class="dropdown-item" data-role="STUDENT" data-bs-toggle="modal" data-bs-target="#createUserModal">
-                                <i class="fas fa-graduation-cap me-2"></i>Add Student</a></li>
-                            <li><a class="dropdown-item" data-role="COUNSELOR" data-bs-toggle="modal" data-bs-target="#createUserModal">
-                                <i class="fas fa-user-md me-2"></i>Add Counselor</a></li>
-                            <li><a class="dropdown-item" data-role="ADMIN" data-bs-toggle="modal" data-bs-target="#createUserModal">
-                                <i class="fas fa-user-shield me-2"></i>Add Admin</a></li>
-                        </ul>
-                    </div>
+                    <a href="addusers.php" class="btn btn-success">
+                        <i class="fas fa-plus me-2"></i>Add User
+                    </a>
                 </div>
             </div>
         </div>
@@ -449,82 +385,6 @@ while ($row = $stmt->fetch()) {
         </div>
     </div>
 
-    <!-- Create User Modal -->
-    <div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="createUserModalLabel">
-                        <i class="fas fa-user-plus me-2"></i>Add New <span id="roleLabel">User</span>
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <form method="POST">
-                    <div class="modal-body">
-                        <input type="hidden" name="action" value="create_user">
-                        <input type="hidden" name="role" id="userRole">
-                        
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="name" class="form-label">Full Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="name" id="name" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
-                                <input type="email" class="form-control" name="email" id="email" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label for="phone" class="form-label">Phone Number</label>
-                                <input type="tel" class="form-control" name="phone" id="phone">
-                            </div>
-                            <div class="col-md-6">
-                                <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
-                                <input type="password" class="form-control" name="password" id="password" required minlength="6">
-                            </div>
-                        </div>
-                        
-                        <!-- Counselor-specific fields -->
-                        <div id="counselorFields" style="display: none;">
-                            <hr class="my-4">
-                            <h6 class="fw-bold text-success">Counselor Profile Information</h6>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label for="specialty" class="form-label">Specialty</label>
-                                    <input type="text" class="form-control" name="specialty" id="specialty" 
-                                           placeholder="e.g., Anxiety & Depression">
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="meeting_mode" class="form-label">Meeting Mode</label>
-                                    <select class="form-select" name="meeting_mode" id="meeting_mode">
-                                        <option value="IN_PERSON">In Person</option>
-                                        <option value="VIDEO">Video Call</option>
-                                        <option value="PHONE">Phone Call</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="location" class="form-label">Location</label>
-                                    <input type="text" class="form-control" name="location" id="location" 
-                                           placeholder="Office location">
-                                </div>
-                                <div class="col-12">
-                                    <label for="bio" class="form-label">Bio</label>
-                                    <textarea class="form-control" name="bio" id="bio" rows="3" 
-                                              placeholder="Professional background and approach..."></textarea>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-success">
-                            <i class="fas fa-plus me-2"></i>Create User
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
     <!-- Edit User Modal -->
     <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
@@ -677,56 +537,35 @@ while ($row = $stmt->fetch()) {
     <?php include '../includes/footer.php'; ?>
     
     <script>
+        // Global functions for onclick attributes
+        function editUser(user) {
+            document.getElementById('editUserId').value = user.id;
+            document.getElementById('editName').value = user.name;
+            document.getElementById('editEmail').value = user.email;
+            document.getElementById('editPhone').value = user.phone || '';
+            document.getElementById('editRole').value = user.role;
+            
+            // Counselor profile fields
+            document.getElementById('editSpecialty').value = user.specialty || '';
+            document.getElementById('editMeetingMode').value = user.meeting_mode || 'IN_PERSON';
+            document.getElementById('editLocation').value = user.location || '';
+            document.getElementById('editBio').value = user.bio || '';
+            
+            // Show/hide counselor fields
+            toggleCounselorFields();
+        }
+
+        function toggleCounselorFields() {
+            const role = document.getElementById('editRole').value;
+            const counselorFields = document.getElementById('editCounselorFields');
+            counselorFields.style.display = role === 'COUNSELOR' ? 'block' : 'none';
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize Add User dropdown
-            const addUserDropdown = document.getElementById('addUserDropdown');
-            if (addUserDropdown) {
-                new bootstrap.Dropdown(addUserDropdown);
-            }
-
-            // Handle create user modal
-            document.querySelectorAll('[data-bs-target="#createUserModal"]').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault(); // Prevent dropdown from closing
-                    const role = this.dataset.role;
-                    document.getElementById('userRole').value = role;
-                    document.getElementById('roleLabel').textContent = role.charAt(0) + role.slice(1).toLowerCase();
-                    
-                    // Show/hide counselor fields
-                    const counselorFields = document.getElementById('counselorFields');
-                    counselorFields.style.display = role === 'COUNSELOR' ? 'block' : 'none';
-
-                    // Reset form fields
-                    document.querySelector('#createUserModal form').reset();
-                    document.getElementById('userRole').value = role;
-                });
-            });
-
-            // Handle edit user
-            function editUser(user) {
-                document.getElementById('editUserId').value = user.id;
-                document.getElementById('editName').value = user.name;
-                document.getElementById('editEmail').value = user.email;
-                document.getElementById('editPhone').value = user.phone || '';
-                document.getElementById('editRole').value = user.role;
-                
-                // Counselor profile fields
-                document.getElementById('editSpecialty').value = user.specialty || '';
-                document.getElementById('editMeetingMode').value = user.meeting_mode || 'IN_PERSON';
-                document.getElementById('editLocation').value = user.location || '';
-                document.getElementById('editBio').value = user.bio || '';
-                
-                // Show/hide counselor fields
-                toggleCounselorFields();
-            }
-
             // Handle role change in edit modal
-            document.getElementById('editRole').addEventListener('change', toggleCounselorFields);
-
-            function toggleCounselorFields() {
-                const role = document.getElementById('editRole').value;
-                const counselorFields = document.getElementById('editCounselorFields');
-                counselorFields.style.display = role === 'COUNSELOR' ? 'block' : 'none';
+            const editRoleSelect = document.getElementById('editRole');
+            if (editRoleSelect) {
+                editRoleSelect.addEventListener('change', toggleCounselorFields);
             }
 
             // Handle reset password modal
